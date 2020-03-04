@@ -17,7 +17,10 @@ class Main(object):
 
     #--------------------------------------
     def newwin(self):
-        """ """
+        """Func to make an instance in seperate file and use method to pass root frame
+        and delete all current child widgets (format) and then create new widgets
+        """
+        
         self.nw = newwin2(self.parent)
 
 
