@@ -2,27 +2,59 @@ import tkinter as tk
 from test2 import newwin2
 
 
+BG = '#0C1021'
+FG = 'white'
+
 
 #-------------------------------------------
 class Main(object):
     """ """
     def __init__(self, parent):
         self.parent = parent
-        self.f = tk.Frame(self.parent, bg = 'red')
-        self.f.grid(padx = 2, pady = 2)
+        self.parent.config(bg = BG)
+        
+        self.f = tk.Frame(self.parent, bg = BG)
+        self.f.grid(row = 0, column = 0, padx = 2, pady = 2, sticky = tk.NS)
 
-        self.l = tk.Button(self.f, text = 'Win 1',
-                           command = lambda: self.newwin())
-        self.l.grid(padx = 10, pady = 10)
+        self.f2 = tk.Frame(self.parent, bg = BG)
+        self.f2.grid(row = 0, column = 1, padx = 2, pady = 2)
+
+        self.todo = tk.Button(self.f, text = 'To Do', bg = BG, fg = FG,
+                           command = lambda: self.newwin('todo'))
+        self.todo.grid(padx = 10, pady = 10)
+
+        self.clog = tk.Button(self.f, text = 'Call Log', bg = BG, fg = FG,
+                           command = lambda: self.newwin('clog'))
+        self.clog.grid(padx = 10, pady = 10)
+
+        self.cont = tk.Button(self.f, text = 'Contacts', bg = BG, fg = FG,
+                           command = lambda: self.newwin('cont'))
+        self.cont.grid(padx = 10, pady = 10)
+
+        self.t = tk.Text(self.f2, bg = BG, fg = FG,
+                         width = 35, height = 5)
+        self.t.grid(padx = 5, pady = 5)
 
     #--------------------------------------
-    def newwin(self):
+    def newwin(self, chc):
         """Func to make an instance in seperate file and use method to pass root frame
         and delete all current child widgets (format) and then create new widgets
         """
-        
-        self.nw = newwin2(self.parent)
 
+        self.nw = newwin2(self.parent, self.f, chc)
+
+
+#-- - - - - Problem will be having not to call imports every loop
+# - - -- - - Idea - Have another seperate file for dictating which is top
+        
+##        if chc == 'todo':
+##            self.nw = newwin2(self.parent, self.f)
+##
+##        if chc == 'clog':
+##            self.nw = newwin2(self.parent, self.f)
+##        
+##        if chc == 'cont':
+##            self.nw = newwin2(self.parent, self.f)
 
 
 #-------------------------------------------
@@ -33,27 +65,35 @@ class Recalled(object):
     lack of deep understanding of OOP is the cause
     """
     
-    def __init__(self, master):
+    def __init__(self, master, frm):
         self.master = master
+        self.frm = frm
         self.emptycurrent()
         self.addnew()
 
     #--------------------------------------
     def emptycurrent(self):
-        """ """
+        """
+        Func to take previous frame widgets and destroying them.
+        Then proceed to call thenext function which will build
+        new widgets
+        """
         
-        for i in self.master.winfo_children():
+        for i in self.frm.winfo_children():  #master.winfo_children():
             i.destroy()
         return
 
     #--------------------------------------
     def addnew(self):
-        """ """
+        """
+        Func to add widgets to the now blank frame
+        Buttons added to menuver from frame to frame.
+        """
         
-        self.f = tk.Frame(self.master, bg = 'red')
+        self.f = tk.Frame(self.frm, bg = BG)
         self.f.grid(padx = 2, pady = 2)
 
-        self.l = tk.Button(self.f, text = 'Win 1 is back!',
+        self.l = tk.Button(self.f, text = 'Win 1 is back!', bg = BG, fg = FG,
                            command = lambda: self.newwin())
         self.l.grid(padx = 10, pady = 10)
 
@@ -61,7 +101,7 @@ class Recalled(object):
     def newwin(self):
         """ """
         
-        self.nw = newwin2(self.master)
+        self.nw = newwin2(self.master,self.frm)
 
     
 
