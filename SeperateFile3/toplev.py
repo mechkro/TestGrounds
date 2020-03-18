@@ -26,6 +26,12 @@ class newtop(tk.Toplevel):
         
         
     def return_to_main(self):
+        """ 
+        We need to destroy the toplevel widget and then quit it so the mainloop is ended for toplevel and allows
+        our root mainloop to continue its loop.
+        
+        We then deiconify the mainloop so it returns to users topwindow view and then return to its file
+        """
         
         self.destroy()
         self.quit()
