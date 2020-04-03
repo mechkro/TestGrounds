@@ -3,6 +3,12 @@ import math
 
 
 """ 
+Currently: 
+Command line use tool where multitude of function calls will be required
+
+Future:
+GUI implemented to expedite the carry out of calculations and ease of use.
+Can add visual graphical aids to asisst in presentations to customer.
 
 *** When using constants from charts be sure the liquids/materials match 
 as well as grabbing values with accurate fluid temperatures.***
