@@ -51,7 +51,8 @@ def tdh(sorl, hd, hs):
 def velocity_head(vel = None, Q = None, d = None):
     """ 
     Function to velocity head calculations. Either enter Velocity if known or
-    Q(flow) and d(inner diameter of pipe)
+    must enter Q(flow) and d(inner diameter of pipe) to get velocity then calc
+    the velocity head.
     ex: *NOTE - must explicitly write variable = something
     
     >>> x = tdh.velocity_head(vel = 4.5)
@@ -107,26 +108,55 @@ def pipe_friction_loss(pipe_friction_const, L):
 
 
 #-----------------------------------------------------------
-def npsha(hp, hvpa, hst, hfs, ha, npshr = None):
+def npsha(fors, ha, hvpa, hst, hfs, npshr = None):
     """ 
     Function to calculate NPSHa (available) in the system. We need to be sure NPSHr < NPSHa
     or cavitation begins.
+        _____________________________________________________________________  
+        ***THIS IS AN APPROXIMATION FUNCTION!!! - LOSES CREDIBILITY IF LENGTH OF
+        SUCTION LINE EXCEEDS 50FT, as well as operation of more than 2 pumps,
+        more than 3 bends in suction line or complex fluid mixtures****
+        _____________________________________________________________________
     
-    hp = absolute pressure on fluid surface = IF open to atmosphere then barometric pressure 
+    fors (flooded or suction) - takes str --> 'F', 'S'    
+    ha = absolute pressure on fluid surface = IF open to atmosphere then barometric pressure 
                                              - or - absolute pressure of existing fluid in tank
     hvpa = Vapor Pressure = gathered from charts (*be sure to base on temperature)
     hst = static pressure = +(above) or -(below) the centerline
-    ha = (L*Vn*C*SG)/(2.31*K*g)
-          Where:
-          - L: length of suction line
-          - 
-    npshr = NPSH required - provided by pump manufacturer (optional)
+    hfs = suction line losses (entrance losses, friction losses, pressure drop thru valves, filters...etc)
+    npshr = NPSH required - provided by pump manufacturer (optional to calc margin)
       
     
     Ex:
     x = pipe_friction_loss(2.25/100.0, 5.0)
     """
-    pass
+    
+    try:
+        if fors.upper() == 'F':                 #Flooded Suction
+            npsha = ha - hvpa + hst - hfs
+            print('Net Pos. Suction Head Available = {}'.format(npsha))
+            
+            if npshr:
+                margin = npsha/npshr
+                print('NPSH ratio = {}'.format(margin))
+            else:
+                pass
+            
+        if fors.upper() == 'S':                 #Suction Lift 
+            npsha = ha + hvpa - hst - hfs
+            print('Net Pos. Suction Head Available = {}'.format(npsha))
+            
+            if npshr:
+                margin = npsha/npshr
+                print('NPSH ratio = {}'.format(margin))
+            else:
+                pass
+            
+        return npsha
+    
+    except Exception as e:
+        print('\nError in NPSHa function.\nPlease read error below and revise input.\n')
+        print('Error Code: {}'.format(e)) 
 
     
 #-----------------------------------------------------------
@@ -153,8 +183,8 @@ def convert_ft_to_psi(fthead, sg = None, W = None):
             return head_psi
         
     except Exception as e:
-        print('Error in convert head to psi function')
-        print(e)    
+        print('\nError in convert head to psi function.\nPlease read error below and revise input.\n')
+        print('Error Code: {}'.format(e))   
     
     
 #-----------------------------------------------------------
@@ -181,6 +211,24 @@ def convert_psi_to_head(psihead, sg = None, W = None):
             return head_ft
         
     except Exception as e:
-        print('Error in convert psi to head function')
-        print(e)
-    
+        print('\nError in convert psi to head function.\nPlease read error below and revise input.\n')
+        print('Error Code: {}'.format(e))
+        
+
+
+#-----------------------------------------------------------
+def temperature_rise(H, Eff, U):
+    """
+    Func to provide temperature rise versus pump capacity.
+    TR (deg F) = H(1.0-E)/(778.0*U*E)
+    Where:
+    -TR is temp rise
+    -H is total head in ft.
+    -E efficiency as a decimal
+    -U specific heat ( BTU/lb/Deg F)
+    """
+
+    TR = (H*(1.0-Eff))/(778.0*U*Eff)
+    print('Temp. Rise @ {} total ft of Head = {} deg F'.format(H,TR))
+
+    return TR
