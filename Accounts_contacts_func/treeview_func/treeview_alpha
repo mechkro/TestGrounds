@@ -1,0 +1,358 @@
+#Create hiracchical treeview Application  
+import tkinter as tk 
+from tkinter import ttk
+import sqlite3 as sql
+import random
+import calendar as cal
+import datetime as dt
+import time
+import parsedatetime as pdt
+import collections as clc
+
+
+rawdata = '''
+This is where csv data is imported.....
+'''
+
+
+#SETTINGS--------------------------
+
+#Main color scheme -------------------
+
+BG = '#0C1021'
+FG = 'white'
+
+#Fonts per widget ------------------------
+lf_font = ('Verdana', 12, 'normal')   #LabelFrame Widget font settings
+
+#ttk widget styling -----------------------------------------
+
+style = ttk.Style()
+style.configure("mystyle.Treeview", highlightthickness = 0, bd = 0, font=('system', 8),
+                background = BG, foreground = FG, cursor = 'hand2',
+                rowheight = 10, height = 4)
+
+style.configure("mystyle.Treeview.Heading", font=('system', 9,'bold'))
+style.configure("mystyle.Label", background = BG, foreground = FG)
+
+style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})]) 
+
+#Contacts column labels for DB and for TREEVIEW ---Columns (18) --------------------------------------------------------
+
+Columns = ['COMPANY_NAME','STATE','CITY','LOC_OPEN','CONTACT_HOURS','NEXT_MEETING','FIRST_NAME',
+           'LAST_NAME_SUFFIX','POSITION','PHONE#1','PHONE#2','EMAIL','LAST_DATE','NOTE','MANF_FOCUS',
+           'PROCESS','OFFICE_SITE_ADDRESS','WEBSITE']
+
+
+####################################################################################################################
+#Columns Description of Contacts ---------------------------
+"""
+'COMPANY_NAME':             Contacts associated company name
+'STATE':                    State/s where they conduct business and or located
+'CITY':                     City of the state they operate
+'LOC_OPEN':                 When does site or office open (can eventually structure my schedule of calls based on hours of operation)
+'CONTACT_HOURS':            Notate hours contact is uaually available or list days they typically are off
+'NEXT_MEETING':             Date coming up if there is a 
+'FIRST_NAME':               Conatcts first name
+'LAST_NAME_SUFFIX':         Contacts last name and suffix (PE, EIT ...etc)
+'POSITION':                 Contacts position within the orginization
+'PHONE#1':                  Primary number
+'PHONE#2':                  Alternate number 
+'EMAIL':                    Contacts email 
+'LAST_DATE':                Last date of interaction with the contact (Will be used to dictate whom needs F/U)
+'NOTE':                     Note describing latest interaction and or something to keep in mind 
+'MANF_FOCUS':               What manufacturers and products should we focus on (There associated company will have a profile page describing processes)
+'PROCESS':                  High level description of processes they implement
+'OFFICE_SITE_ADDRESS:       Address of there office or site location
+'WEBSITE':                  Website of the associated company (May move to
+"""
+####################################################################################################################
+
+#Accounts databases functions ---------------------
+
+def accounts_database():
+    """
+    
+    """
+    
+    acc_conn = sql.connect(':memory:')
+    acon = acc_conn.cursor()
+    
+    acon.execute("""CREATE TABLE IF NOT EXISTS accounts(
+                        cname TEXT, state TEXT, city TEXT, locopen TEXT, conhours TEXT, nxtmeet TEXT, fname TEXT,
+                        lnamesfx TEXT, pos TEXT, phn1 TEXT, phn2 TEXT, email TEXT, ldate TEXT, note TEXT,
+                        manffocus TEXT, process TEXT, offsiteadd TEXT, website TEXT);""")
+    acc_conn.commit()
+
+    return acc_conn
+
+
+#Accounts database functions ----------------------
+
+def contacts_database():
+    """
+    
+    """
+    
+    con_conn = sql.connect(':memory:')
+    ccon = con_conn.cursor()
+    
+    ccon.execute("""CREATE TABLE IF NOT EXISTS accounts (
+                        cname TEXT, state TEXT, city TEXT, locopen TEXT, conhours TEXT, nxtmeet TEXT, fname TEXT,
+                        lnamesfx TEXT, pos TEXT, phn1 TEXT, phn2 TEXT, email TEXT, ldate TEXT, note TEXT,
+                        manffocus TEXT, process TEXT, offsiteadd TEXT, website TEXT);""")
+    con_conn.commit()
+
+    return con_conn
+
+
+
+#New Contact input pulled from GUI and input to database -----------------------------------------
+
+def new_contact(con, *args, **kwargs):
+    """
+    args will be carrier of the value arguments used to insert pulled data to con
+    """
+
+    ccon = con.cursor()
+    try:
+        
+        ccon.execute("""INSERT INTO contacts(cname, state, city, locopen, conhours,
+                       nxtmeet, fname, lnamesfx, pos, phn1, phn2, email, ldate, note,
+                       manffocus, process, offsiteadd, website) VALUES(?,?,?,?,?,?,?,?,?,
+                       ?,?,?,?,?,?,?,?,?);""".format((i for i in args)))
+        
+        con.commit()
+        
+    except:
+        print('Error')
+
+
+
+#New Contact input pulled from GUI and input to database -----------------------------------------
+
+def new_account(acc, *args, **kwargs):
+    """
+    args will be carrier of the value arguments used to insert pulled data to con
+    """
+
+    acon = acc.cursor()
+    
+    try:
+        
+        acon.execute("""INSERT INTO accounts(cname, state, city, locopen, conhours,
+                       nxtmeet, fname, lnamesfx, pos, phn1, phn2, email, ldate, note,
+                       manffocus, process, offsiteadd, website) VALUES(?,?,?,?,?,?,?,?,?,
+                       ?,?,?,?,?,?,?,?,?);""".format((i for i in args)))
+        
+        acc.commit()
+        
+    except:
+        print('Error')
+    
+    
+
+    
+#Main application section class to build out widget and functionality -------------------------
+
+class AccConTreeview(tk.Tk):
+    
+    def __init__(self, accdb, condb, *args, **kwargs):
+        """
+        parent - main root window that each of the widgest will reference as parent
+        accdb - passed DB connection to utilize with i/o of data for accounts
+        condb - passed DB connection to utilize with i/o of data for contacts
+        """
+        
+        tk.Tk.__init__(self)                                 
+        self.config(bg = BG)                                 #Make background
+        self.title('Accounts and Contacts')
+        
+        self.accdb = accdb                                   #new_account(accdb)  #REF the account database
+        self.condb = condb                                   #new_contact(condb)  #REF the contacts database
+
+        #Frame creations to break up window -------------------------
+        
+        self.toptree = tk.Frame(self, bg = BG)
+        self.toptree.grid(row = 0)
+
+        #Labelframe creation ------------------------------------------------------------
+        
+        self.toplab_instruct = tk.Label(self.toptree, text = '\n   INSTRUCTIONS:\n   Use dropdowns for the states below\n\
+   to view the existing accounts.\n   Each account will also have listed contacts.\n', justify = 'left',
+                                        bg = BG, fg = FG, font = ('Verdana', 10, 'bold'))
+        
+        self.toplab_instruct.grid(row = 0, column = 0, padx = 5, pady = 5, sticky = tk.W)
+
+        self.but = tk.Button(self.toptree, text = 'Load Contacts', bg = BG, fg = FG,
+                             command = lambda: self.insert_into_treeview())
+        self.but.grid(row = 0, padx = 5, pady = 5)
+        
+        self.top_labframe = tk.LabelFrame(self.toptree, text = 'Acc. & Contacts Explorer',
+                                          font = lf_font, bg = BG, fg = FG)
+        
+        self.top_labframe.grid(row = 1, padx = 5, pady = 5)
+
+        #TOP FRAME TREEVIEW ----------------------------------------
+
+        self.treescroll_vert = ttk.Scrollbar(self.top_labframe)
+        self.treescroll_vert.grid(row = 0, column = 1, sticky = tk.NS)
+
+        self.treescroll_horz = ttk.Scrollbar(self.top_labframe, orient = tk.HORIZONTAL)
+        self.treescroll_horz.grid(row = 1, sticky = tk.EW)
+        
+        self.toptreeview = ttk.Treeview(self.top_labframe,
+                                columns = ('c1','c2','c3','c4','c5','c6','c7','c8','c9'),
+                                style = "mystyle.Treeview")
+
+        self.treescroll_vert.configure(command = self.toptreeview.yview)
+        self.toptreeview.configure(yscrollcommand = self.treescroll_vert.set)
+        
+        self.toptreeview['columns'] = ('c1','c2','c3','c4','c5','c6','c7','c8','c9')
+        
+        self.toptreeview.heading('c1', text = 'Comp.name')          #style = "mystye.Treeview.Heading")
+        self.toptreeview.heading('c2', text = 'State')              #style = "mystye.Treeview.Heading")
+        self.toptreeview.heading('c3', text = 'City')               #style = "mystye.Treeview.Heading")
+        self.toptreeview.heading('c4', text = 'Loc.Open')           #style = "mystye.Treeview.Heading")
+        self.toptreeview.heading('c5', text = 'Cont.Hours')         #style = "mystye.Treeview.Heading")
+        self.toptreeview.heading('c6', text = 'Next.Meeting')       #style = "mystye.Treeview.Heading")
+        self.toptreeview.heading('c7', text = 'First')              #style = "mystye.Treeview.Heading")
+        self.toptreeview.heading('c8', text = 'Last.Suffix')        #style = "mystye.Treeview.Heading")
+        self.toptreeview.heading('c9', text = 'Pos.')               #style = "mystye.Treeview.Heading")
+
+        self.toptreeview.column('#0', width = 50)
+        self.toptreeview.column('c1', width = 80, anchor = 'center')    #Dictating the size of the columns (Adjust settings per. -
+        self.toptreeview.column('c2', width = 70, anchor = 'center')    #size of the entry
+        self.toptreeview.column('c3', width = 80, anchor = 'center')
+        self.toptreeview.column('c4', width = 130, anchor = 'center')
+        self.toptreeview.column('c5', width = 90, anchor = 'center')
+        self.toptreeview.column('c6', width = 95, anchor = 'center')
+        self.toptreeview.column('c7', width = 95, anchor = 'center')
+        self.toptreeview.column('c8', width = 100, anchor = 'center')
+        self.toptreeview.column('c9', width = 100, anchor = 'center')
+
+        self.toptreeview.grid(row = 0, padx = 5, pady = 5, sticky = tk.NSEW)
+
+        self.toptreeview.insert('','0','AZ',text='AZ')
+        self.toptreeview.insert('','1','NV',text='NV')  
+
+        #Divider label created to inform user treeview continues below---------------------------------
+        
+        #self.botlab = tk.Label(self.top_labframe, text = '{} Treeview Continued {}'.format('-~'*30, '-~'*30), bg = BG, fg = FG)
+        #self.botlab.grid(row = 1, padx = 5, pady = 5)
+
+        #CONTINUED TREEVIEW ------------------------------------ 
+        
+        self.bottreeview = ttk.Treeview(self.top_labframe,
+                                columns = ('c10','c11','c12','c13','c14','c15','c16','c17','c18'),
+                                style = "mystyle.Treeview")
+        
+        self.bottreeview['columns'] = ('c10','c11','c12','c13','c14','c15','c16','c17','c18')
+        
+        self.bottreeview.heading('c10', text = 'Phone1')                #style = "mystye.Treeview.Heading")
+        self.bottreeview.heading('c11', text = 'Alt.Phone')             #style = "mystye.Treeview.Heading")
+        self.bottreeview.heading('c12', text = 'Email')                 #style = "mystye.Treeview.Heading")
+        self.bottreeview.heading('c13', text = 'Last.Date')             #style = "mystye.Treeview.Heading")
+        self.bottreeview.heading('c14', text = 'Note')                  #style = "mystye.Treeview.Heading")
+        self.bottreeview.heading('c15', text = 'Manf.Focus')            #style = "mystye.Treeview.Heading")
+        self.bottreeview.heading('c16', text = 'Processes')             #style = "mystye.Treeview.Heading")
+        self.bottreeview.heading('c17', text = 'Office.Site.Add')       #style = "mystye.Treeview.Heading")
+        self.bottreeview.heading('c18', text = 'Website')               #style = "mystye.Treeview.Heading")
+
+        self.bottreeview.column('#0', width = 50)
+        self.bottreeview.column('c10', width = 95, anchor = 'center')   #Dictating the size of the columns (Adjust settings per. -
+        self.bottreeview.column('c11', width = 95, anchor = 'center')   #size of the entry
+        self.bottreeview.column('c12', width = 180, anchor = 'center')   
+        self.bottreeview.column('c13', width = 110, anchor = 'center')
+        self.bottreeview.column('c14', width = 90, anchor = 'center')
+        self.bottreeview.column('c15', width = 95, anchor = 'center')
+        self.bottreeview.column('c16', width = 95, anchor = 'center')
+        self.bottreeview.column('c17', width = 100, anchor = 'center')
+        self.bottreeview.column('c18', width = 100, anchor = 'center')
+
+        self.bottreeview.grid(row = 2, padx = 5, pady = 5, sticky = tk.NSEW)
+
+        self.bottreeview.insert('','0','AZ',text='Cont. Arizona...')
+        self.bottreeview.insert('','1','NV',text='Cont. Nevada...')
+
+        #self.insert_into_treeview()
+        self.toptreeview.bind('<<TreeviewSelect>>', self.highlight_both_lines)    #Call to highlight other line associated with the clicked
+        self.bottreeview.bind('<<sTreeviewSelect>>', self.highlight_both_lines)    #See line above
+        self.protocol('WM_DELETE_WINDOW', lambda: self.on_cancel())
+        
+
+    #WINDOW CANCEL PROTOCOL --------------------------------
+    def on_cancel(self):
+        """
+        When user closes window by clicking top right 'x' button, func will destroy window
+        """
+        
+        self.destroy()
+
+
+    #------------------------------------------------------
+    def highlight_both_lines(self, event):
+        """
+        Func to check if one of the treeview lines has been highlighted. This will highlight the others positional equal
+        in the bottom treeview so that user can be assured it is correct.
+
+        torb - top or bottom meaning the top treeview box or lower
+        linenumb - identifiable location
+        """
+        iid = event.widget.focus()
+        print(event.widget.item(iid))     
+        
+
+    #------------------------------------------------------
+    def insert_into_treeview(self):
+        """ """
+        rd = rawdata.split('\n')
+        holdr = clc.OrderedDict()
+        for n,m in enumerate(rd):
+            
+            if m[0] == ' ':
+                pass
+            
+            else:
+                holdr = m.split(',')
+                
+                try:
+
+                    if holdr[1] == 'AZ':
+                        thold = holdr[0:9]
+                        bhold = holdr[9:18]
+                        self.toptreeview.insert('AZ', 'end',values = (tuple(thold)))      #[i for i in m.split(',')])))
+                        self.bottreeview.insert('AZ', 'end',values = (tuple(bhold)))              #[i for i in m.split(',')])))
+
+                    if holdr[1] == 'NV':
+                        thold = holdr[0:9]
+                        bhold = holdr[9:18]
+                        self.toptreeview.insert('NV', 'end',values = (tuple(thold)))      #[i for i in m.split(',')])))
+                        self.bottreeview.insert('NV', 'end',values = (tuple(bhold)))              #[i for i in m.split(',')])))
+                        
+                except:# IndexError as e:
+                    pass
+                        #print(e)
+
+########################################################################################################
+#Main APP start -------------------------------
+if __name__ == '__main__':
+    """
+    Make a call to initialize databases for the accounts and associated contacts
+    Then initialize the GUI window for display
+    """
+    
+    acc = accounts_database()           
+    con = contacts_database()
+    
+    root = AccConTreeview(acc, con)
+    root.mainloop()
+
+
+
+
+
+
+
+
+
