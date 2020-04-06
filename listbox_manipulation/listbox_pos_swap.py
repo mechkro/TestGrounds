@@ -1,6 +1,6 @@
 import tkinter as tk
 import random as rand
-
+import datetime as dt
 
 BG =  '#0C1021'
 FG = 'white'
@@ -38,11 +38,17 @@ class Main(object):
         self.master.config(bg = BG)
         
         self.f = tk.Frame(self.master, bg = BG)
-        self.f.grid()
+        self.f.grid(row = 0, column = 0, padx = 5, pady = 5)
+        
+        self.f2 = tk.Frame(self.master, bg = BG)
+        self.f2.grid(row = 0, column = 1, padx = 5, pady = 5)
         
         #self.txt = tk.Text(self.f)
         #self.txt.grid(row = 0, padx = 5, pady = 5)
         self.entr_hold = []
+        
+        self.lll = tk.Label(self.f2, text = 'Todays Date:\n{}'.format(dt.date.today()), font = ('Verdana',24,'bold'), bg = BG, fg = FG)
+        self.lll.grid(padx = 5, pady = 5)
         
         self.lbox = tk.Listbox(self.f, bg = BG, fg = FG)
         self.lbox.grid(row = 0, padx = 5, pady = 5)
