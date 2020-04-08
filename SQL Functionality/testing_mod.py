@@ -1,8 +1,11 @@
 import sqlite3 as sql
 import random
 import datetime
+import tkinter as tk
+from collections import OrderedDict as od
 
 
+#----------------------------------------------------------
 customer = ['AZ_Canning', 'Abrams_Airborne', 'Air_Liquide_Bagdad', 'Air_Products_and_Chemicals', 'Apache_Nitrogen', 'Arizona_Electric_Power', 'Arizona_LNG_Applied_LNG',
             'Arizona_Mining_Company', 'Arizona_Pacific_Wood', 'Asarco_Mission', 'Avondale', 'BE_Aerospace', 'Biosphere', 'Black_&_Veatch', 'Botanicare', 'Brown_and_Caldwell',
             'Bull_Moose', 'Bullhead_City', 'CCA', 'Camp_Dresser_McGhee', 'Carefree', 'Casa_Grande', 'Casa_Grande_Area', 'Cave_Creek', 'Chandler', 'Chino_Valley_',
@@ -23,6 +26,7 @@ notes = ['Called and left VM', 'NTOd the quote', 'Waiting on calling him back', 
          "Plan lunch and learn", "Urgent!!!!", "Call and get clarification", "WON"]
 
 
+#----------------------------------------------------------
 def connect_db():
     """ """
     
@@ -34,16 +38,50 @@ class SQLBot:
     
     
     #----------------------------------------------------------
-    def __init__(self, table, *args):
+    def __init__(self, table, parent, *args):
         """ """
-        
         self.table = table
+        self.parent = parent
+        
+        self.registar = od()
+        
+        self.create_frame()
+        self.create_text()
+        self.create_button()
+        
+        #self.c = connect_db()
+        #self.create_table()
+        #self.add_to_table()
+        #x = self.print_table()
+        #self.print_select(x)
+    
+    
+    #----------------------------------------------------------
+    def create_frame(self):
+        self.f = tk.Frame(self.parent)
+        self.f.grid(row = 0, column = 0)
+        return
+    
+    #----------------------------------------------------------
+    def create_text(self):
+        self.txt = tk.Text(self.f)
+        self.txt.grid(row = 0, padx = 5, pady = 5)
+        return
+    
+    #----------------------------------------------------------    
+    def create_button(self):
+        self.b = tk.Button(self.f, text = 'start', command = lambda: self.invoke_sql(), font = ('Verdana', 14, 'bold'))
+        self.b.grid(row = 1, padx = 5, pady = 5)
+        return
+    
+    #----------------------------------------------------------
+    def invoke_sql(self):
         self.c = connect_db()
         self.create_table()
         self.add_to_table()
         x = self.print_table()
-        self.print_select(x)
-     
+        self.print_select(x)        
+    
         
     #----------------------------------------------------------
     def create_table(self):
@@ -58,7 +96,7 @@ class SQLBot:
     def add_to_table(self):
         """ """
         
-        for n, i in enumerate(range(1000)):
+        for n, i in enumerate(range(10)):
             r_customer = random.choice(customer)
             fname = random.choice(firstnames)
             lname = random.choice(lastnames)
@@ -81,9 +119,13 @@ class SQLBot:
                 temp = i[2]
             else:
                 pass
+
+            self.txt.insert(tk.END, 'ID: {}\nDate: {}\nCustomer: {}\nNote: {}\n\n'.format(i[0], i[1], i[2], i[3]))
+            self.register_entry(n,i)
             print(i)
+            
+        self.print_registar()
         return temp
-    
     
     #----------------------------------------------------------
     def print_select(self, searchterm):
@@ -92,12 +134,37 @@ class SQLBot:
         itr = 0
         ents = self.c.execute("""SELECT * FROM test WHERE customer = ?""",(searchterm,))
         for i in ents:
+            self.txt.insert(tk.END, i)
             itr += 1
             print(i)
         print('There were {} total entries that matched "{}"'.format(itr, searchterm))
         print('Which is {} % of the total polled'.format((itr/1000.0)*100.0))
         return
     
+    #----------------------------------------------------------
+    def register_entry(self, line, ent):
+        """ 
+        
+        """        
+        
+        self.registar[line] = ent
+        return
     
     
-SQLBot('test')
+    #----------------------------------------------------------
+    def print_registar(self):
+        """ 
+        
+        """
+        
+        for k, v in self.registar.items():
+            print(k)
+            print(v)
+        return
+    
+
+#----------------------------------------------------------    
+if __name__ == '__main__':
+    root = tk.Tk()
+    SQLBot('test', root)
+    root.mainloop()
