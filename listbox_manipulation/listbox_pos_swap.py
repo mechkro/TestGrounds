@@ -4,6 +4,7 @@ import datetime as dt
 
 BG =  '#0C1021'
 FG = 'white'
+DGR = 'dark goldenrod'
 
 chc = """COMPANY NAME
 INDUSTRY
@@ -48,7 +49,7 @@ class Main(object):
         self.entr_hold = []
         
         self.lll = tk.Label(self.f2, text = 'Todays Date:\n{}'.format(dt.date.today()), font = ('Verdana',24,'bold'), bg = BG, fg = FG)
-        self.lll.grid(padx = 5, pady = 5)
+        self.lll.grid(row = 0, padx = 5, pady = 5)
         
         self.lbox = tk.Listbox(self.f, bg = BG, fg = FG)
         self.lbox.grid(row = 0, padx = 5, pady = 5)
@@ -87,14 +88,30 @@ class Main(object):
                 temp[x] = y
             else:
                 pass
-            
+    
+        self.searchentry.delete(0, tk.END)
+        self.resultslab = tk.Label(self.f2, text = 'Total of {} instances found\nof your searched term'.format(len(temp.values())), 
+                                   bg = BG, fg = FG)
+        self.resultslab.grid(row = 1, padx = 5, pady = 5)
+        self.okbutton = tk.Button(self.f2, text = 'Ok, Reset', bg = BG, fg = FG, command = lambda: self.reset_search(temp))
+        self.okbutton.grid(row = 2, padx = 5, pady =5)
+        
         print('Matches located at the following indexes:\n')
         print(temp.keys())
         
         for k in temp.keys():
-            self.lbox.itemconfig(k, bg = 'black', fg = 'dark goldenrod')
+            self.lbox.itemconfig(k, bg =  BG, fg = DGR)
             
+    #---------------------------------------------------------------------------------------------    
+    def reset_search(self, ents):
+        """
         
+        """
+        for k in ents.keys():
+            self.lbox.itemconfig(k, bg = BG, fg = FG)
+        self.resultslab.destroy()
+        self.okbutton.destroy()
+        return
                 
     #---------------------------------------------------------------------------------------------    
     def load_rand(self):
