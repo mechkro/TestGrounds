@@ -1,7 +1,7 @@
 import sqlite3 as sql
 import random
 import datetime
-
+import collections as clc
 
 #SAUCE - https://www.python-course.eu/sql_python.php
 """
@@ -106,9 +106,14 @@ class SQLBot:
         
     #----------------------------------------------------------
     def create_table(self):
-        """ """
+        """
+        ToDo - Tag Classifications - tablename (status CHAR(1)) - ex: Can be 'U' for Urgent
+
+        """
         
         self.c.execute("""CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, date TEXT, customer TEXT, note TEXT)""")
+        self.c.commit()
+        self.c.execute("""CREATE TABLE IF NOT EXISTS datetrig (id INTEGER, note TEXT, days INTEGER)""")
         self.c.commit()
         return
     
@@ -189,7 +194,7 @@ class SQLBot:
         """ """
         p = [1,2,3,4,5,6,7,8,20,25,15]
         dt = datetime.date.today()-datetime.timedelta(days=random.choice(p))
-        self.c.execute("""INSERT INTO test VALUES (?, ?,?,?)""",(newid, str(dt), random.choice(customer), newid))
+        self.c.execute("""INSERT INTO test VALUES (?,?,?,?)""",(newid, str(dt), random.choice(customer), newid))
         self.c.commit()
         print('New ID succesfully input!')
 
@@ -201,22 +206,38 @@ class SQLBot:
         d.execute("""SELECT * FROM test WHERE id % 2 = 0""")
         for i in d.fetchall():
             self.print_days(i)
-
+        self.print_db_trig()
 
     def print_days(self,s):
         d = datetime.datetime.today()
         p = datetime.datetime.strptime(s[1], '%Y-%m-%d')
-        print('Days Since: {}'.format((d - p).days))
-        if (d-p).days >= 14:
-            self.triggered(s)
+        diff = (d - p).days
+        print('Days Since: {}'.format(diff))
+        if diff >= 14:
+            self.triggered(s,diff)
         else:
             pass
+        #self.print_db_trig()
 
-    def triggered(self, itm):
+
+    def triggered(self, itm, d):
         print('\nEntry ID {} Triggered\nWhos name is: {}'.format(itm[0], itm[2]))
-        return
-            
-    
+        self.c.execute("""INSERT INTO datetrig VALUES (?,?,?)""",(itm[0], itm[2], d))
+        self.c.commit()
+        
+
+    def print_db_trig(self):
+        c = self.c.cursor()
+        c.execute("SELECT * FROM datetrig")
+        sorter = clc.OrderedDict()
+        for i in c.fetchall():
+            print(i)
+            sorter[i[0]] = int(i[-1])
+
+        d_sorted_by_value = clc.OrderedDict(sorted(sorter.items(), key=lambda x: x[1]))
+        for k,v in d_sorted_by_value.items():
+            print('ID: {}'.format(k))
+            print('Days: {}\n'.format(v))
     
     
 SQLBot('test')
