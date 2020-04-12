@@ -3,6 +3,8 @@ from tkinter import ttk
 
 
 
+
+
 root = Tk()
 root.resizable(FALSE, FALSE)
 menu = Menu(root)
@@ -24,12 +26,21 @@ p2.add(f4)
 p2.grid(row = 0, column = 1)
 
 
-label = Label(root, text = 'Right Click GUI').pack(padx = 5, pady = 5)
+label = Label(root, text = 'Right Click GUI').grid(row = 1,columnspan = 2,padx = 5, pady = 5)
 lbox = Listbox(root, width = 25, height = 8)
-lbox.pack(padx = 5, pady = 5)
+lbox.grid(row =2, columnspan = 2, padx = 5, pady = 5)
+
+#mapping what should pop up options be in context menu
+context_map = {'panned':[],
+               'lbox':[],
+               'label':[]
+               }
 
 for i in ('Copy', 'Edit', 'Remove', 'Tag', 'Select'):
     menu.add_command(label=i)
+
+def what_widget_clicked(x,y):
+    
     
 if (root.tk.call('tk', 'windowingsystem')=='aqua'):
     root.bind('<2>', lambda e: menu.post(e.x_root, e.y_root))
@@ -37,4 +48,3 @@ if (root.tk.call('tk', 'windowingsystem')=='aqua'):
 else:
     root.bind('<3>', lambda e: menu.post(e.x_root, e.y_root))
 root.mainloop()
-
