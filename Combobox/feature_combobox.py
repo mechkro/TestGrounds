@@ -132,14 +132,25 @@ class ComboBox_app(tk.Frame):
     def __init__(self, *args):
         tk.Frame.__init__(self,*args)
         self.grid()
-       
+                   
         self.setup_sql()
+        
+        self.menu = tk.Menu(self)
+        for i in ('Copy', 'Edit', 'Open', 'Add'):
+            self.menu.add_command(label=i)     
+            
         self.label = tk.Label(self, text = 'Customers').grid(column=0, row=0, padx = 5, pady = 5)
         self.cbox = ttk.Combobox(self, 
                                     values = customer)
         
         self.cbox.grid(column=0, row=1, padx = 5, pady = 5)
-        self.cbox.bind("<<ComboboxSelected>>", self.callbackFunc)    
+        self.cbox.bind("<<ComboboxSelected>>", self.callbackFunc)
+        
+        if (self.tk.call('tk', 'windowingsystem')=='aqua'):
+            self.cbox.bind('<2>', lambda e: self.menu.post(e.x_root, e.y_root))
+            self.cbox.bind('<Control-1>', lambda e: self.menu.post(e.x_root, e.y_root))
+        else:
+            self.cbox.bind('<3>', lambda e: self.menu.post(e.x_root, e.y_root))             
         
         self.var = tk.StringVar()
         self.label2 = tk.Label(self, text = 'Choose Product Category').grid(column=0, row=2, padx = 5, pady = 5)
@@ -149,6 +160,19 @@ class ComboBox_app(tk.Frame):
         
         self.lbox = tk.Listbox(self, width = 20, height = 10)
         self.lbox.grid(row = 4, column = 0, padx = 10, pady = 10)
+        
+        if (self.tk.call('tk', 'windowingsystem')=='aqua'):
+            if self.lbox.selection_get():
+                self.lbox.bind('<2>', lambda e: self.menu.post(e.x_root, e.y_root))
+                self.lbox.bind('<Control-1>', lambda e: self.menu.post(e.x_root, e.y_root))
+            else:
+                pass
+        else:
+            if self.lbox.curselection() != None:
+                self.lbox.bind('<3>', lambda e: self.menu.post(e.x_root, e.y_root))           
+            else:
+                pass
+        
         #self.txt = tk.Text(self, width = 20, height = 10)
         #self.txt.grid(row = 4, column = 0, padx = 10, pady = 10)
         self.mainloop()
