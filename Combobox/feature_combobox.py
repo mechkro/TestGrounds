@@ -115,14 +115,14 @@ VFDs""".splitlines()
 
 
 vendors_directory = {'PUMPS': vendors_pumps,
-                            'MECHANICAL SEALS/ PACKING':vendors_seals,
-                            'POWER TRANSFER/ COUPLINGS':vendors_powertransfer,
-                            'GEAR BOXES':vendors_agitators_tankclean,
-                            'GEAR BOXES':vendors_gearbox, 
-                            'HEAT EXCHANGERS':vendors_heatx,
-                            'VACUUM PUMPS/ BLOWERS':vendors_vacpumpblow,
-                            'FILTRATION & SEPARATION':vendors_filtersep, 
-                            'MISC. AND ACCESORIES':vendors_miscaccess}
+                            'MECHANICAL_SEALS_PACKING':vendors_seals,
+                            'POWER_TRANSFER_COUPLINGS':vendors_powertransfer,
+                            'GEAR_BOXES':vendors_agitators_tankclean,
+                            'GEAR_BOXES':vendors_gearbox, 
+                            'HEAT_EXCHANGERS':vendors_heatx,
+                            'VACUUM_PUMPS_BLOWERS':vendors_vacpumpblow,
+                            'FILTRATION_SEPARATION':vendors_filtersep, 
+                            'MISC_AND_ACCESORIES':vendors_miscaccess}
 
 #---------------------------------------------------
 class ComboBox_app(tk.Frame):
@@ -132,11 +132,11 @@ class ComboBox_app(tk.Frame):
     def __init__(self, *args):
         tk.Frame.__init__(self,*args)
         self.grid()
-        
+       
+        self.setup_sql()
         self.label = tk.Label(self, text = 'Customers').grid(column=0, row=0, padx = 5, pady = 5)
         self.cbox = ttk.Combobox(self, 
                                     values = customer)
-        
         
         self.cbox.grid(column=0, row=1, padx = 5, pady = 5)
         self.cbox.bind("<<ComboboxSelected>>", self.callbackFunc)    
@@ -147,24 +147,63 @@ class ComboBox_app(tk.Frame):
         self.cbox2.grid(column=0, row=3, padx = 5, pady = 5)
         self.var.trace("w", self.get_category)
         
-        self.txt = tk.Text(self, width = 35, height = 10)
-        self.txt.grid(row = 4, column = 0, padx = 10, pady = 10)
+        self.lbox = tk.Listbox(self, width = 20, height = 10)
+        self.lbox.grid(row = 4, column = 0, padx = 10, pady = 10)
+        #self.txt = tk.Text(self, width = 20, height = 10)
+        #self.txt.grid(row = 4, column = 0, padx = 10, pady = 10)
         self.mainloop()
+    
+    #----------------------------------------------------------   
+    def setup_sql(self):
+        """ """
+        self.c = sql.connect(':memory:')
+        self.cur = self.c.cursor()
         
+        for k,v in vendors_directory.items():
+            self.create_tables()
+            self.load_database(k,v)
+        self.pull_data()
+        return        
         
+    #----------------------------------------------------------        
+    def create_tables(self):
+        """ """
+        self.c.execute("""CREATE TABLE IF NOT EXISTS suppliers (id INTEGER PRIMARY KEY, cat TEXT, supp TEXT);""")
+        self.c.commit()
+        return
+            
+    #----------------------------------------------------------         
+    def load_database(self, k,v):
+        """ """
+        for i in v:
+            self.cur.execute("""INSERT INTO suppliers (cat, supp) VALUES (?,?);""",(k,i))
+            self.c.commit()
+        return
+    
+    #----------------------------------------------------------   
+    def pull_data(self):
+        """ """
+        for k,v in vendors_directory.items():
+            self.cur.execute("""SELECT * FROM suppliers""")
+            for thing in self.cur.fetchall():
+                print(thing)
+        return
+            
+    #----------------------------------------------------------    
     def callbackFunc(self, event):
         """ """
         feedback = ("New Element Selected: {}".format(event.widget.get())).split(':')
         print(feedback)
         print(' '.join(feedback[:]))
         
-        
+    #----------------------------------------------------------   
     def get_category(self, *args):
         """ """
         contents = vendors_directory[self.cbox2.get()]
-        self.txt.delete(1.0, tk.END)
+        self.lbox.delete(0, tk.END)
+        
         for i in contents:
-            self.txt.insert(tk.END, '{}\n'.format(i))
+            self.lbox.insert(tk.END, i)
     
         
         
