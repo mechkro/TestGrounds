@@ -1,5 +1,5 @@
-import tkinter as tk
-from tkinter import ttk
+import Tkinter as tk
+import ttk
 import sqlite3 as sql
 
 
@@ -250,34 +250,59 @@ class ComboBox_app(tk.Frame):
         self.c = sql.connect(':memory:')
         self.cur = self.c.cursor()
         
+        self.create_tables_suppliers()
+        self.create_tables_customer()
+        
         for k,v in vendors_directory.items():
-            self.create_tables()
-            self.load_database(k,v)
-        self.pull_data()
+            self.load_database_suppliers(k,v)
+        
+        for i in customer:
+            self.load_database_customers(i)
+    
+        for x in ['suppliers', 'customers']:
+            self.pull_data(x)
         return        
         
     #----------------------------------------------------------        
-    def create_tables(self):
+    def create_tables_suppliers(self):
         """ """
         self.c.execute("""CREATE TABLE IF NOT EXISTS suppliers (id INTEGER PRIMARY KEY, cat TEXT, supp TEXT);""")
         self.c.commit()
         return
-            
+    
+    #----------------------------------------------------------        
+    def create_tables_customer(self):
+        """ """
+        self.c.execute("""CREATE TABLE IF NOT EXISTS customers (id INTEGER PRIMARY KEY, custname TEXT, notes TEXT);""")
+        self.c.commit()
+        return    
+    
     #----------------------------------------------------------         
-    def load_database(self, k,v):
+    def load_database_suppliers(self, k,v):
         """ """
         for i in v:
             self.cur.execute("""INSERT INTO suppliers (cat, supp) VALUES (?,?);""",(k,i))
             self.c.commit()
         return
     
-    #----------------------------------------------------------   
-    def pull_data(self):
+    #----------------------------------------------------------         
+    def load_database_customers(self, name, note = None):
         """ """
-        for k,v in vendors_directory.items():
-            self.cur.execute("""SELECT * FROM suppliers""")
-            for thing in self.cur.fetchall():
-                print(thing)
+        self.cur.execute("""INSERT INTO customers (custname, notes) VALUES (?,?);""",(name,note))
+        self.c.commit()
+        return    
+    
+    #----------------------------------------------------------   
+    def pull_data(self, tab):
+        """ """
+        pullformat = """SELECT * FROM {}""".format(tab)
+        self.cur.execute(pullformat)
+        for thing in self.cur.fetchall():
+            print("""ID = {}
+Supplier = {}
+Note = {}
+""".format(*thing))
+                
         return
         
     #----------------------------------------------------------   
