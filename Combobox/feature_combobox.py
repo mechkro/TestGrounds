@@ -124,6 +124,8 @@ vendors_directory = {'PUMPS': vendors_pumps,
                             'FILTRATION_SEPARATION':vendors_filtersep, 
                             'MISC_AND_ACCESORIES':vendors_miscaccess}
 
+
+
 #---------------------------------------------------
 class ComboBox_app(tk.Frame):
     
@@ -134,23 +136,21 @@ class ComboBox_app(tk.Frame):
         self.grid()
                    
         self.setup_sql()
+        menutest = {'Copy': self.test_1,
+                          'Edit': self.test_2,
+                          'Open': self.test_3,
+                          'Add': self.test_4}        
         
         self.menu = tk.Menu(self)
-        for i in ('Copy', 'Edit', 'Open', 'Add'):
-            self.menu.add_command(label=i)     
+        for k,v in menutest.items():
+            self.menu.add_command(label = k, command = v)     
             
         self.label = tk.Label(self, text = 'Customers').grid(column=0, row=0, padx = 5, pady = 5)
         self.cbox = ttk.Combobox(self, 
                                     values = customer)
         
         self.cbox.grid(column=0, row=1, padx = 5, pady = 5)
-        self.cbox.bind("<<ComboboxSelected>>", self.callbackFunc)
-        
-        if (self.tk.call('tk', 'windowingsystem')=='aqua'):
-            self.cbox.bind('<2>', lambda e: self.menu.post(e.x_root, e.y_root))
-            self.cbox.bind('<Control-1>', lambda e: self.menu.post(e.x_root, e.y_root))
-        else:
-            self.cbox.bind('<3>', lambda e: self.menu.post(e.x_root, e.y_root))             
+        self.cbox.bind("<<ComboboxSelected>>", self.callbackFunc)        
         
         self.var = tk.StringVar()
         self.label2 = tk.Label(self, text = 'Choose Product Category').grid(column=0, row=2, padx = 5, pady = 5)
@@ -169,14 +169,81 @@ class ComboBox_app(tk.Frame):
                 pass
         else:
             if self.lbox.curselection() != None:
-                self.lbox.bind('<3>', lambda e: self.menu.post(e.x_root, e.y_root))           
+                self.lbox.bind('<3>', lambda e: self.menu.post(e.x_root, e.y_root))
+                self.lbox.bind('<Double-Button-1>', self.double_click_open)
             else:
                 pass
         
         #self.txt = tk.Text(self, width = 20, height = 10)
         #self.txt.grid(row = 4, column = 0, padx = 10, pady = 10)
         self.mainloop()
+        
     
+    ############################################################################
+    #MENU SELECTED DRIVEN OPTIONS--------------------------------------------
+    #----------------------------------------------------------   
+    def test_1(self):
+        """ 
+        Pop up menu selection triggered -'COPY' 
+        """
+        print('Test COPY worked')
+        return
+    
+    #----------------------------------------------------------   
+    def test_2(self):
+        """
+         Pop up menu selection triggered -'EDIT' 
+        """
+        
+        print('Test EDIT worked')
+        return
+    
+    #----------------------------------------------------------   
+    def test_3(self):
+        """
+         Pop up menu selection triggered -'OPEN' 
+        """
+        
+        print('Test OPEN worked')
+        return
+    
+    #----------------------------------------------------------   
+    def test_4(self):
+        """
+         Pop up menu selection triggered -'ADD' 
+        """
+        
+        print('Test ADD worked')
+        return
+    
+    
+    ############################################################################
+    #EVENT DRIVEN OPTIONS--------------------------------------------
+    def double_click_open(self, event):
+        """
+        Triggered by double mouse click event ('Left Button' - <1>)
+        """
+        
+        grab_select = event.widget.get(tk.ACTIVE)
+        print(grab_select)
+        
+        return
+        
+    
+    #----------------------------------------------------------    
+    def callbackFunc(self, event):
+        """
+        Triggered by combobox change in selection. The stringvariable has a trace added
+        command to trigger this function whenever its value has been changed.
+        """
+        
+        feedback = ("New Element Selected: {}".format(event.widget.get())).split(':')
+        print(feedback)
+        print(' '.join(feedback[:]))    
+    
+    
+    ############################################################################
+    #INITIALIZING FUNCTIONS--------------------------------------------    
     #----------------------------------------------------------   
     def setup_sql(self):
         """ """
@@ -212,13 +279,6 @@ class ComboBox_app(tk.Frame):
             for thing in self.cur.fetchall():
                 print(thing)
         return
-            
-    #----------------------------------------------------------    
-    def callbackFunc(self, event):
-        """ """
-        feedback = ("New Element Selected: {}".format(event.widget.get())).split(':')
-        print(feedback)
-        print(' '.join(feedback[:]))
         
     #----------------------------------------------------------   
     def get_category(self, *args):
