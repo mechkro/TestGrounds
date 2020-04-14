@@ -1,3 +1,9 @@
-Development notes:
+---------------------------  Development notes:
 
+SECTIONS:
+
+- Todo/Reminders:
+   - Every database needs 
+   - Personal: Bills, etc
+   
 - Product List - MArkets
