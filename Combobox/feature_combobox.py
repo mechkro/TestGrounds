@@ -1,5 +1,5 @@
-import Tkinter as tk
-import ttk
+import tkinter as tk
+from tkinter import ttk
 import sqlite3 as sql
 
 
@@ -135,6 +135,10 @@ class ComboBox_app(tk.Frame):
         tk.Frame.__init__(self,*args)
         self.grid()
                    
+        self.lframe1 = tk.LabelFrame(self, text = 'Database Details')
+        self.lframe1.grid(row = 0, column = 0,  padx = 10, pady = 5, sticky = tk.NSEW)
+        
+        
         self.setup_sql()
         menutest = {'Copy': self.test_1,
                           'Edit': self.test_2,
@@ -142,23 +146,24 @@ class ComboBox_app(tk.Frame):
                           'Add': self.test_4}        
         
         self.menu = tk.Menu(self)
+        
         for k,v in menutest.items():
             self.menu.add_command(label = k, command = v)     
             
-        self.label = tk.Label(self, text = 'Customers').grid(column=0, row=0, padx = 5, pady = 5)
-        self.cbox = ttk.Combobox(self, 
+        self.label = tk.Label(self.lframe1, text = 'Customers').grid(column=0, row=0, padx = 5, pady = 5)
+        self.cbox = ttk.Combobox(self.lframe1, 
                                     values = customer)
         
         self.cbox.grid(column=0, row=1, padx = 5, pady = 5)
         self.cbox.bind("<<ComboboxSelected>>", self.callbackFunc)        
         
         self.var = tk.StringVar()
-        self.label2 = tk.Label(self, text = 'Choose Product Category').grid(column=0, row=2, padx = 5, pady = 5)
-        self.cbox2 = ttk.Combobox(self, values = [i for i in vendors_directory.keys()], textvariable = self.var)
+        self.label2 = tk.Label(self.lframe1, text = 'Choose Product Category').grid(column=0, row=2, padx = 5, pady = 5)
+        self.cbox2 = ttk.Combobox(self.lframe1, values = [i for i in vendors_directory.keys()], textvariable = self.var)
         self.cbox2.grid(column=0, row=3, padx = 5, pady = 5)
         self.var.trace("w", self.get_category)
         
-        self.lbox = tk.Listbox(self, width = 20, height = 10)
+        self.lbox = tk.Listbox(self.lframe1, width = 20, height = 10)
         self.lbox.grid(row = 4, column = 0, padx = 10, pady = 10)
         
         if (self.tk.call('tk', 'windowingsystem')=='aqua'):
@@ -174,8 +179,21 @@ class ComboBox_app(tk.Frame):
             else:
                 pass
         
-        #self.txt = tk.Text(self, width = 20, height = 10)
-        #self.txt.grid(row = 4, column = 0, padx = 10, pady = 10)
+        #---------------------------------------------------------------------------
+        self.lframe2 = tk.LabelFrame(self, text = 'Database Details')
+        self.lframe2.grid(row = 0, column = 1, padx = 10, pady = 5, sticky = tk.NSEW)
+        
+        
+        self.var2 = tk.StringVar()
+        
+        self.labelright = tk.Label(self.lframe2, text = 'Choose from combobox').grid(row = 0, column = 0, padx = 5, pady = 5)
+        
+        self.cboxright = ttk.Combobox(self.lframe2, values = [i for i in vendors_directory.keys()], textvariable = self.var2)
+        self.cboxright.grid(row = 1, column = 0, padx = 5, pady = 5)        
+        
+        self.txt2 = tk.Text(self.lframe2, width = 20, height = 14)
+        self.txt2.grid(row = 2, column = 0, padx = 10, pady = 10)
+        
         self.mainloop()
         
     
