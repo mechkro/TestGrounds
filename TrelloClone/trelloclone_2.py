@@ -213,8 +213,8 @@ class Initiate(object):
         self.master.config(bg = BG)
 
         self.menu = tk.Menu(self.master)
-        self.menu.add_command(label = 'Move: In Progress', command = self.move_to_inprogress)
-        self.menu.add_command(label = 'Move: Completed', command = self.move_to_completed)
+        self.menu.add_command(label = 'Move: In Progress', command = lambda: self.move_to_inprogress())
+        self.menu.add_command(label = 'Move: Completed', command = self.move_to_completed())
         self.menu.add_command(label = 'Cancel', command = lambda: None)
         self.master.bind('<3>', lambda e: self.menu.post(e.x_root, e.y_root))
         
@@ -331,34 +331,39 @@ class Initiate(object):
     def move_to_inprogress(self):
         """ """
         temp_sort = []   #Will append the selected items and current entries of new column
-        
-        try:
-            
-            att = self.listboxhold[0].curselection()        #Grab selected items from listbox
-            print(len(att))
-            
-            for i in att:
-                cur_ent = self.listboxhold[0].get(i)
-                #self.listboxhold[1].insert(tk.END, cur_ent)
-                temp_sort.append(cur_ent)
-                self.listboxhold[0].delete(i)
-        
-        except:
-            print('failed')
 
-        for i in self.listboxhold[1].get(0, tk.END):        #Before deleting all entries in new listbox append them to list
-            temp_sort.append(i)
-
-        self.listboxhold[1].delete(0, tk.END)               #Delete all entries of new listbox destination
-        for thngs in sorted(temp_sort):                     #Sort the list then re-insert into new listbox
-            if not thngs:
-                pass
-            else:
-                self.listboxhold[1].insert(tk.END, thngs)
+        #lb1_cordsx, lb1_cordsy = self.listboxhold[0].winfo_x, self.listboxhold[0].winfo_y
+        if x in range(self.listboxhold[1].winfo_x(), self.listboxhold[0].winfo_width()): 
+            try:
+            
+                att = self.listboxhold[0].curselection()        #Grab selected items from listbox
+                print(len(att))
                 
-        self.listboxhold[0].selection_clear(0, tk.END)
-        self.listboxhold[0].selection_set(0)
-        self.update_totals_labels()
+                for i in att:
+                    cur_ent = self.listboxhold[0].get(i)
+                    #self.listboxhold[1].insert(tk.END, cur_ent)
+                    temp_sort.append(cur_ent)
+                    self.listboxhold[0].delete(i)
+        
+            except:
+                print('failed')
+
+            for i in self.listboxhold[1].get(0, tk.END):        #Before deleting all entries in new listbox append them to list
+                temp_sort.append(i)
+
+            self.listboxhold[1].delete(0, tk.END)               #Delete all entries of new listbox destination
+            for thngs in sorted(temp_sort):                     #Sort the list then re-insert into new listbox
+                if not thngs:
+                    pass
+                else:
+                    self.listboxhold[1].insert(tk.END, thngs)
+                    
+            self.listboxhold[0].selection_clear(0, tk.END)
+            self.listboxhold[0].selection_set(0)
+            self.update_totals_labels()
+        
+        else:
+            print(self.listboxhold[1].winfo_x(), self.listboxhold[0].winfo_width())
         
 ##        grab = self.listboxhold[0].curselection()
 ##        for i in grab:
