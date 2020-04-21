@@ -1,6 +1,10 @@
 import tkinter as tk
 import random
 import functools as func
+import sqlite3 as sql3
+
+
+
 
 #Configuration Variables -----------------------------------------------------
 BG = '#0C1021'
@@ -8,6 +12,9 @@ FG = 'white'
 DGR = 'dark goldenrod'
 SFG = 'black'
 #-----------------------------------------------------------------------------------
+
+
+
 
 
 proj_outline = """
@@ -184,6 +191,9 @@ WATERWORKS_ENGINEERS"""
 
 
 
+sqlfileloc = r'none'
+
+
 
 
 #-----------------------------------------------------------------------------------
@@ -201,6 +211,12 @@ class Initiate(object):
         self.master = master
         self.master.title('Trello Clone')
         self.master.config(bg = BG)
+
+        self.menu = tk.Menu(self.master)
+        self.menu.add_command(label = 'Move: In Progress', command = self.move_to_inprogress)
+        self.menu.add_command(label = 'Move: Completed', command = self.move_to_completed)
+        self.menu.add_command(label = 'Cancel', command = lambda: None)
+        self.master.bind('<3>', lambda e: self.menu.post(e.x_root, e.y_root))
         
         #Create the dictionariess to hold our widgets
         self.framehold = {}
@@ -208,8 +224,9 @@ class Initiate(object):
         self.labelframehold = {}
         self.texthold = {}
         self.listboxhold = {}
+        self.menuhold = {}
         
-        col_titles = [('Not Started','red'), ('In Progress', 'yellow'), ('Completed','green')]
+        col_titles = [('Not Started', FG), ('In Progress', FG), ('Completed', FG)]  #'red', 'yellow', 'green'
         col_desc = ['Total Entries: ', 'Total Entries: ', 'Total Entries: ']
         itr = 0
     
@@ -218,17 +235,20 @@ class Initiate(object):
             for j in range(3):
                 
                 self.framehold[itr] = self.make_frame()
-                self.framehold[itr].grid(row = i, column = j, padx = 5, pady = 5)   #Total of 9 frames made
+                self.framehold[itr].grid(row = i, column = j, padx = 3, pady = 3)   #Total of 9 frames made
                 self.framehold[itr].bind('<Enter>', self.change_clr_enter)
                 self.framehold[itr].bind('<Leave>', self.change_clr_leave)
         
                 if itr <= 2:
                     self.labelframehold[j] = self.make_labelframe(self.framehold[itr], '{}'.format(col_titles[itr][0]), col_titles[itr][1], *[i, j])
-                    self.labelhold[itr] = self.make_label(self.labelframehold[itr], '{}'.format(col_desc[itr]), *[ i, j])
+                    self.labelhold[itr] = self.make_label(self.labelframehold[itr], '{}'.format(col_desc[itr]), *[ i, 0])
                     
                 if 2 < itr <= 5:
-                    self.listboxhold[itr -3] = self.make_listbox(self.framehold[itr], *[i,j])
+                    self.listboxhold[itr -3] = self.make_listbox(self.framehold[itr], *[i,0])
                     self.listboxhold[itr - 3].bind('<ButtonRelease>', self.change_lab_selected)
+##                    self.menuhold[itr-3] = tk.Menu(self.listboxhold[itr -3])
+##                    self.menuhold[itr-3].add_command(label = 'OK')
+##                    self.listboxhold[itr - 3].bind('<3>', lambda e: self.menuhold[itr-3].post(e.x, e.y))
                 
                 itr += 1
 
@@ -237,46 +257,47 @@ class Initiate(object):
                 
         self.lab_selected_col_1 = tk.Label(self.labelframehold[0], text = 'Selected Entries: {}'.format('-'), bg = BG,
                                            fg = FG)
-        self.lab_selected_col_1.grid(row = 2, padx = 5, pady = 5)
+        self.lab_selected_col_1.grid(row = 2, padx = 3, pady = 3)
 
         self.lab_selected_col_2 = tk.Label(self.labelframehold[1], text = 'Selected Entries: {}'.format('-'), bg = BG,
                                            fg = FG)
-        self.lab_selected_col_2.grid(row = 2, padx = 5, pady = 5)
+        self.lab_selected_col_2.grid(row = 2, padx = 3, pady = 3)
         
         self.lab_selected_col_3 = tk.Label(self.labelframehold[2], text = 'Selected Entries: {}'.format('-'), bg = BG,
                                            fg = FG)
-        self.lab_selected_col_3.grid(row = 2, padx = 5, pady = 5)
+        self.lab_selected_col_3.grid(row = 2, padx = 3, pady = 3)
 
         
         #------------------------------------------------ Column 1 - Buttons
-        self.butt_fwd_col1 = tk.Button(self.master, text = '>', bg = BG, fg = FG, command = lambda: None, font = ('Vardana',14,'bold'))
+        self.butt_fwd_col1 = tk.Button(self.master, text = '>', bg = BG, fg = FG, command = lambda: None, font = ('Vardana',8,'bold'))
         self.butt_fwd_col1.grid(row = 3, column = 0, pady = 2, sticky = tk.EW)
         
         self.butt_fwd_col1.bind('<Button-1>', self.button_binding_1)
         
-        self.butt_fwd_col1_2 = tk.Button(self.master, text = 'Change FG', bg = BG, fg = FG, command = lambda: self.highlight_selected(self.listboxhold[0], self.listboxhold[0].curselection()), font = ('Vardana',14,'bold'))
+        self.butt_fwd_col1_2 = tk.Button(self.master, text = 'Add NEW', bg = BG, fg = FG, command = lambda: self.maker_new_todo, font = ('Vardana',8,'bold'))
         self.butt_fwd_col1_2.grid(row = 4, column = 0, pady = 2, sticky = tk.EW)
           
         
         #------------------------------------------------ Column 2 - Buttons
-        self.butt_fwd_col2_left = tk.Button(self.master, text = '<', bg = BG, fg = FG, command = lambda: None, font = ('Vardana',14,'bold'))
+        self.butt_fwd_col2_left = tk.Button(self.master, text = '<', bg = BG, fg = FG, command = lambda: self.highlight_selected(self.listboxhold[1],
+                                            self.listboxhold[1].curselection()), font = ('Vardana',10,'bold'))
         self.butt_fwd_col2_left.grid(row = 3, column = 1, pady = 2, sticky = tk.EW)
         
         self.butt_fwd_col2_left.bind('<Button-1>', self.button_binding_2_left)
         
-        self.butt_fwd_col2_right = tk.Button(self.master, text = '>', bg = BG, fg = FG, command = lambda: None, font = ('Vardana',14,'bold'))
+        self.butt_fwd_col2_right = tk.Button(self.master, text = '>', bg = BG, fg = FG, command = lambda: None, font = ('Vardana',10,'bold'))
         self.butt_fwd_col2_right.grid(row = 4, column = 1, pady = 2, sticky = tk.EW)
         
         self.butt_fwd_col2_right.bind('<Button-1>', self.button_binding_2_right)        
         
         
         #------------------------------------------------ Column 3 - Buttons
-        self.butt_fwd_col3 = tk.Button(self.master, text = '<', bg = BG, fg = FG, command = lambda: None, font = ('Vardana',14,'bold'))
+        self.butt_fwd_col3 = tk.Button(self.master, text = '<', bg = BG, fg = FG, command = lambda: None, font = ('Vardana',10,'bold'))
         self.butt_fwd_col3.grid(row = 3, column = 2, pady = 2, sticky = tk.EW)
         
         self.butt_fwd_col3.bind('<Button-1>', self.button_binding_3)
         
-        self.butt_fwd_col3_2 = tk.Button(self.master, text = 'Change FG', bg = BG, fg = FG, command = lambda: None, font = ('Vardana',14,'bold'))
+        self.butt_fwd_col3_2 = tk.Button(self.master, text = 'Change FG', bg = BG, fg = FG, command = lambda: None, font = ('Vardana',10,'bold'))
         self.butt_fwd_col3_2.grid(row = 4, column = 2, pady = 2, sticky = tk.EW)        
         
         self.buttonhold = {1:self.butt_fwd_col1,
@@ -285,12 +306,12 @@ class Initiate(object):
                                       4:self.button_binding_3}
         
         
-        self.detailslf = tk.LabelFrame(self.master, text = 'Current Entry: None', bg = BG, fg = FG, font = ('Vardana',13,'bold'))
-        self.detailslf.grid(row = 5, column = 0, columnspan = 3, padx = 5, pady = 5, sticky = tk.EW)
+        self.detailslf = tk.LabelFrame(self.master, text = 'Current Entry: None', bg = BG, fg = FG, font = ('Vardana',10,'bold'))
+        self.detailslf.grid(row = 5, column = 0, columnspan = 3, padx = 3, pady = 3, sticky = tk.EW)
         
-        self.details_pane = tk.Text(self.detailslf, bg = BG, fg = FG, height = 5, width = 150,
-                                    selectbackground = DGR, selectforeground = 'black')
-        self.details_pane.grid(columnspan = 3, padx = 10, pady = 5, sticky = tk.NSEW)
+        self.details_pane = tk.Text(self.detailslf, bg = BG, fg = FG, height = 6, width = 150,
+                                    selectbackground = DGR, selectforeground = 'black', state = tk.DISABLED)
+        self.details_pane.grid(row = 0, column = 0, padx = 3, pady = 3, sticky = tk.EW)#tk.NSEW)
         
         
         a_list = acc_list.split('\n')   #split up the ltriple quote into list
@@ -299,6 +320,92 @@ class Initiate(object):
             self.testing_entries(self.listboxhold[0], itms)
         
         self.update_totals_labels()
+
+
+##    #-------------------------------
+##    def popupmenu(self, x, y):
+##        self.master.bind('<3>', lambda: self.menu.post(x, y))
+
+
+    #-----------------------------------------------------------------------------------
+    def move_to_inprogress(self):
+        """ """
+        temp_sort = []   #Will append the selected items and current entries of new column
+        
+        try:
+            
+            att = self.listboxhold[0].curselection()        #Grab selected items from listbox
+            print(len(att))
+            
+            for i in att:
+                cur_ent = self.listboxhold[0].get(i)
+                #self.listboxhold[1].insert(tk.END, cur_ent)
+                temp_sort.append(cur_ent)
+                self.listboxhold[0].delete(i)
+        
+        except:
+            print('failed')
+
+        for i in self.listboxhold[1].get(0, tk.END):        #Before deleting all entries in new listbox append them to list
+            temp_sort.append(i)
+
+        self.listboxhold[1].delete(0, tk.END)               #Delete all entries of new listbox destination
+        for thngs in sorted(temp_sort):                     #Sort the list then re-insert into new listbox
+            if not thngs:
+                pass
+            else:
+                self.listboxhold[1].insert(tk.END, thngs)
+                
+        self.listboxhold[0].selection_clear(0, tk.END)
+        self.listboxhold[0].selection_set(0)
+        self.update_totals_labels()
+        
+##        grab = self.listboxhold[0].curselection()
+##        for i in grab:
+##            txt = self.listboxhold[0].get(i)
+##            print(txt)
+
+    #-----------------------------------------------------------------------------------
+    def move_to_completed(self):
+        """ """
+        temp_sort = []   #Will append the selected items and current entries of new column
+        
+        try:
+            
+            att = self.listboxhold[0].curselection()        #Grab selected items from listbox
+            print(len(att))
+            
+            for i in att:
+                cur_ent = self.listboxhold[0].get(i)
+                #self.listboxhold[1].insert(tk.END, cur_ent)
+                temp_sort.append(cur_ent)
+                self.listboxhold[0].delete(i)
+        
+        except:
+            print('failed')
+
+        for i in self.listboxhold[1].get(0, tk.END):        #Before deleting all entries in new listbox append them to list
+            temp_sort.append(i)
+
+        self.listboxhold[1].delete(0, tk.END)               #Delete all entries of new listbox destination
+        for thngs in sorted(temp_sort):                     #Sort the list then re-insert into new listbox
+            if not thngs:
+                pass
+            else:
+                self.listboxhold[1].insert(tk.END, thngs)
+                
+        self.listboxhold[0].selection_clear(0, tk.END)
+        self.listboxhold[0].selection_set(0)
+        self.update_totals_labels()
+        
+##        grab = self.listboxhold[0].curselection()
+##        print(grab)
+
+
+    #-----------------------------------------------------------------------------------
+    def maker_new_todo(self):
+        """ """
+        pass
 
 
     #-----------------------------------------------------------------------------------
@@ -379,7 +486,7 @@ class Initiate(object):
             #f = tk.Frame(self.master, bg = BG)
             #f.grid(row = args[0], column = args[1], padx = 5, pady = 5)
             
-        lf = tk.LabelFrame(parent, text = txt, bg = BG, fg = clr, font = ('Vardana',18,'bold'))
+        lf = tk.LabelFrame(parent, text = txt.upper(), bg = BG, fg = clr, font = ('Vardana',14,'bold'))
         lf.grid(row = args[0], column = args[1], padx = 5, pady = 5, sticky = tk.EW)
         return lf
     
@@ -392,8 +499,8 @@ class Initiate(object):
         #try:
             #f = tk.Frame(self.master, bg = BG)
             #f.grid(row = args[0], column = args[1], padx = 5, pady = 5)
-        lb = tk.Listbox(parent, bg = BG, fg = FG, font = ('Vardana',8,'normal'), width = 45, height = 18, selectmode = tk.EXTENDED)
-        lb.grid(row = args[0], column = args[1], padx = 5, pady = 5)
+        lb = tk.Listbox(parent, bg = BG, fg = FG, font = ('Vardana',8,'normal'), selectmode = tk.EXTENDED, width = 45) #,width = 45, height = 18, selectmode = tk.EXTENDED)
+        lb.grid(row = args[0], column = args[1], padx = 3, pady = 3)
         
         #Adding click button 1 binding to display details in details pane
         lb.bind('<Double-Button-1>', self. display_details)
@@ -427,8 +534,8 @@ class Initiate(object):
         #try:
             #f = tk.Frame(self.master, bg = BG)
             #f.grid(row = args[0], column = args[1], padx = 5, pady = 5)
-        t = tk.Text(parent, bg = BG, fg = FG, font = ('impact',8,'normal'), width = 37, height = 7)
-        t.grid(row = args[0], column = args[1], padx = 5, pady = 5)
+        t = tk.Text(parent, bg = BG, fg = FG, font = ('impact',8,'normal'))#, width = 37, height = 7)
+        t.grid(row = args[0], column = args[1], padx = 3, pady = 3)
         return t
 
     
@@ -441,7 +548,7 @@ class Initiate(object):
         
         
         l = tk.Label(parent, text = txt, bg = BG, fg = FG, font = ('Vardana',10,'normal'))
-        l.grid(row = args[0], column = args[1], padx = 5, pady = 5)
+        l.grid(row = args[0], column = args[1], padx = 3, pady = 3)
         self.add_binding(l)     #Add Binding to functionality before returning the label to dictionary
         
         return l   
@@ -510,8 +617,13 @@ class Initiate(object):
 
         self.listboxhold[1].delete(0, tk.END)               #Delete all entries of new listbox destination
         for thngs in sorted(temp_sort):                     #Sort the list then re-insert into new listbox
-            self.listboxhold[1].insert(tk.END, thngs)
-            
+            if not thngs:
+                pass
+            else:
+                self.listboxhold[1].insert(tk.END, thngs)
+                
+        self.listboxhold[0].selection_clear(0, tk.END)
+        self.listboxhold[0].selection_set(0)
         self.update_totals_labels()                         #Call to adjust the totals labels
      
        
@@ -543,8 +655,12 @@ class Initiate(object):
         self.listboxhold[0].delete(0, tk.END)               #Delete all entries of new listbox destination
         
         for thngs in sorted(temp_sort):                     #Sort the list then re-insert into new listbox
-            self.listboxhold[0].insert(tk.END, thngs)
-    
+            if not thngs:
+                pass
+            else:
+                self.listboxhold[0].insert(tk.END, thngs)
+        self.listboxhold[1].selection_clear(0, tk.END)
+        self.listboxhold[1].selection_set(0)
         self.update_totals_labels()
     
     #-----------------------------------------------------------------------------------       
@@ -575,8 +691,12 @@ class Initiate(object):
         self.listboxhold[2].delete(0, tk.END)               #Delete all entries of new listbox destination
         
         for thngs in sorted(temp_sort):                     #Sort the list then re-insert into new listbox
-            self.listboxhold[2].insert(tk.END, thngs)
-    
+            if not thngs:
+                pass
+            else:
+                self.listboxhold[2].insert(tk.END, thngs)
+        self.listboxhold[1].selection_clear(0, tk.END)
+        self.listboxhold[1].selection_set(0)
         self.update_totals_labels()
     
     
@@ -607,7 +727,9 @@ class Initiate(object):
         
         for thngs in sorted(temp_sort):                     #Sort the list then re-insert into new listbox
             self.listboxhold[1].insert(tk.END, thngs)
-    
+
+        self.listboxhold[2].selection_clear(0, tk.END)
+        self.listboxhold[2].selection_set(0)
         self.update_totals_labels()
       
 
