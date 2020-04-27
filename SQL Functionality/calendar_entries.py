@@ -22,17 +22,27 @@ class Main:
         
     #-----------------------------------------
     def establish_db_connection(self):
-        """ """
+        """ 
+        For now is having database run and source from memory instead of future .db
+        """       
+        
         floc = ':memory:'
         self.condb = sqlite3.connect(floc)
     
     
     #------------------------------------------
     def create_db_table(self):
-        """ """
+        """ 
+        Create table for the database to referemce. 
+        Vars: id, date, note, tstamp
+        
+        tstamp - timestamp of the last event for any given entry or change
+        """
+        
         self.condb.execute("""CREATE TABLE IF NOT EXISTS caldates (id INTEGER PRIMARY KEY,
                                                                                             date TEXT,
-                                                                                            note TEXT);""")
+                                                                                            note TEXT,
+                                                                                            tstamp TEXT);""")
         self.condb.commit()
         
     #-----------------------------------------
@@ -47,7 +57,7 @@ class Main:
         """
         c = cal.Calendar()
         dates = c.yeardatescalendar(2020, width = 1)
-        self.dates_map = {}
+        self.dates_map = {} 
         iter_dates = 0
         for a in dates:
             for b in a:
@@ -66,11 +76,14 @@ class Main:
 
     #------------------------------------------------------
     def insert_map_into_db(self):
-        """ """
+        """ 
+        
+        """
         
         cur = self.condb.cursor()
         for k, v in self.dates_map.items():
-            cur.execute("""INSERT INTO caldates (id, date) VALUES (?, ?)""",(v,k))
+            t = dt.datetime.now()
+            cur.execute("""INSERT INTO caldates (id, date, tstamp) VALUES (?, ?, ?)""",(v,k, t))
         self.condb.commit()
         cur.close()
         print('succesful insert and close of db')
