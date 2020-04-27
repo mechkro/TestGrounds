@@ -14,8 +14,9 @@ class Main:
         self.create_db_table()
         self.execute_date_mapping()
         self.insert_map_into_db()
-        self.print_all_db()
+        #self.print_all_db()
         self.enter_into_date_new()
+        self.print_all_notes()
         
         
         
@@ -56,7 +57,7 @@ class Main:
                         if y.split(',')[0] != '2020':
                             pass
                         else:
-                            self.dates_map[iter_dates] = y
+                            self.dates_map[y] = iter_dates
                             iter_dates += 1
         
         #for k,v in self.dates_map.items():
@@ -69,7 +70,7 @@ class Main:
         
         cur = self.condb.cursor()
         for k, v in self.dates_map.items():
-            cur.execute("""INSERT INTO caldates (id, date) VALUES (?, ?)""",(k,v))
+            cur.execute("""INSERT INTO caldates (id, date) VALUES (?, ?)""",(v,k))
         self.condb.commit()
         cur.close()
         print('succesful insert and close of db')
@@ -77,7 +78,9 @@ class Main:
 
     #----------------------------------------------
     def print_all_db(self):
-        """ """
+        """
+
+        """
         
         cur = self.condb.cursor()
         cur.execute("""SELECT * FROM caldates""")
@@ -89,20 +92,52 @@ class Main:
         return
 
 
+    #---------------------------------------------
     def enter_into_date_new(self):
-        """ """
+        """
+        Function serves to gather date input from user and insert into the approapriate
+        DB id based on the date
+        """
+        
         year_in = input("What year? : ")
         month_in = input("What Month? : ")
         day_in = input("What Day? : ")
+
+        if int(month_in) in range(0,10):
+            month_in = '0{}'.format(month_in)
+        else:
+            pass
+
+        if int(day_in) in range(0,10):
+            day_in = '0{}'.format(day_in)
+        else:
+            pass
         x = "{}, {}, {}".format(year_in, month_in, day_in)
+        #xdate = dt.datetime.strftime(x, '%Y, %m, %d')
         note_in = input("Note: ")
 
-        fromdatesmap = [k for k,v in self.dates_map.items() if v == x]
-        self.condb.execute("""INSERT INTO caldates (id, date, note) VALUES (?,?,?)""",(fromdatesmap[0], self.dates_map[fromdatesmap[0]], note_in))
+
+        cur = self.condb.cursor()
+        cur.execute("""UPDATE caldates SET note=? WHERE id=?""", (note_in, self.dates_map[x]))
         self.condb.commit()
+        cur.close()
 
         print('succesful implement')
         return
+
+
+    #-----------------------------------------------
+    def print_all_notes(self):
+        """
+        Currently serving as a testing output function.
+        FUTURE - alter to print whatever entry was entered
+        """
+        
+        cur = self.condb.cursor()
+        cur.execute("""SELECT * FROM caldates""")
+        ents = cur.fetchall()
+        for j in ents:
+            print(j)
     
         
             
