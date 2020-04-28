@@ -16,16 +16,26 @@ class Main(object):
         
         self.frm = tk.Frame(self.parent)
         self.frm.grid(sticky = tk.NSEW)
+
+        self.ents_count = tk.Label(self.frm, text = 'No Entries Loaded', font = 'verdana 12 bold')
+        self.ents_count.grid(row = 0, columnspan = 2, padx = 5, pady = 5, sticky = tk.EW)
         
         self.sbar = tk.Scrollbar(self.frm, orient = tk.VERTICAL)
-        self.sbar.grid(row = 0, column = 1, sticky = tk.NS)
+        self.sbar.grid(row = 1, column = 1, sticky = tk.NS)
         self.txt = tk.Text(self.frm, yscrollcommand = self.sbar.set)
-        self.txt.grid(row = 0, column = 0, padx = 5, pady = 5, sticky = tk.NSEW)
+        self.txt.grid(row = 1, column = 0, padx = 5, pady = 5, sticky = tk.NS)
         self.sbar.config(command = self.txt.yview)
         
         self.butt_initiate = tk.Button(self.frm, text = 'Initiate DB', font = 'verdana 14 bold', command = lambda: self.init_db_func())
-        self.butt_initiate.grid(row = 1, columnspan = 2, padx = 5, pady = 5, sticky = tk.EW)
-        
+        self.butt_initiate.grid(row = 2, columnspan = 2, padx = 5, pady = 5, sticky = tk.EW)
+
+        self.filterlab = tk.Label(self.frm, text = 'Filter by?')
+        self.filterlab.grid(row = 3, columnspan = 2, padx = 5, pady = 5)
+
+        self.sboxvar = tk.StringVar()
+        self.sbox = tk.Spinbox(self.frm, values = ['Month', 'Day', 'Company'])
+        self.sbox.grid(row = 4, columnspan = 2, padx = 5, pady = 5)
+        self.sboxvar.trace('w', None)
         
         
     #-----------------------------------------    
@@ -122,7 +132,8 @@ class Main(object):
         """
            
         self.tlevel = tk.Toplevel()
-        
+
+        #LAbel Widgets --------------------------------------
         self.l1 = tk.Label(self.tlevel, text = 'What year?')
         self.l1.grid(row = 0, column = 0, padx = 3, pady = 3)
         
@@ -131,7 +142,8 @@ class Main(object):
         
         self.l3 = tk.Label(self.tlevel, text = 'What Day?')
         self.l3.grid(row = 2, column = 0, padx = 3, pady = 3)       
-       
+
+        #Entry Widgets ------------------------------
         self.e1 = tk.Entry(self.tlevel)
         self.e1.grid(row = 0, column = 1, padx = 3, pady = 3)
         
@@ -139,13 +151,47 @@ class Main(object):
         self.e2.grid(row = 1, column = 1, padx = 3, pady = 3)
         
         self.e3 = tk.Entry(self.tlevel)
-        self.e3.grid(row = 2, column = 1, padx = 3, pady = 3)        
+        self.e3.grid(row = 2, column = 1, padx = 3, pady = 3)
+
+        #Bindings ---------------------------------------
+        self.e1.bind('<Enter>', self.alter_clr_e1)
+        self.e1.bind('<Leave>', self.default_clr_e1)
+
+        self.e2.bind('<Enter>', self.alter_clr_e2)
+        self.e2.bind('<Leave>', self.default_clr_e2)
+
+        self.e3.bind('<Enter>', self.alter_clr_e3)
+        self.e3.bind('<Leave>', self.default_clr_e3)
         
+        #Button Widget -----------------------------------
         self.b1 = tk.Button(self.tlevel, text = 'Submit', command = lambda: self.check_add_note())
         self.b1.grid(row = 3, columnspan = 2, padx = 5, pady = 5)
         
         self.tlevel.mainloop()
-        
+
+    def alter_clr_e1(self, event):
+        """ """
+        self.l1.config(fg = 'dark goldenrod')
+
+    def default_clr_e1(self, event):
+        """ """
+        self.l1.config(fg = 'black')
+
+    def alter_clr_e2(self, event):
+        """ """
+        self.l2.config(fg = 'dark goldenrod')
+
+    def default_clr_e2(self, event):
+        """ """
+        self.l2.config(fg = 'black')
+
+    def alter_clr_e3(self, event):
+        """ """
+        self.l3.config(fg = 'dark goldenrod')
+
+    def default_clr_e3(self, event):
+        """ """
+        self.l3.config(fg = 'black')
     #---------------------------------------------
     def check_add_note(self):
         """
@@ -206,6 +252,8 @@ class Main(object):
         cur = self.condb.cursor()
         cur.execute("""SELECT * FROM caldates WHERE note != 'None'""")
         ents = cur.fetchall()
+        numb_ents = len(ents)
+        self.ents_count.config(text = 'Total Entries: {}'.format(numb_ents))
         for j in ents:
             notetoadd = """##########\nID: {}\nDate: {}\nNote: {}\nLast Change: {}\n##########\n\n""".format(j[0],j[1],j[2],j[3])
             self.txt.insert(tk.END,notetoadd)
