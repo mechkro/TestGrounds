@@ -36,6 +36,15 @@ class Main(object):
         self.sbox = tk.Spinbox(self.frm, values = ['Month', 'Day', 'Company'])
         self.sbox.grid(row = 4, columnspan = 2, padx = 5, pady = 5)
         self.sboxvar.trace('w', None)
+
+        self.editlab = tk.Label(self.frm, text = 'Edit Entry ID:')
+        self.editlab.grid(row = 5, columnspan = 2, padx = 3, pady = 3)
+        
+        self.editent = tk.Entry(self.frm)
+        self.editent.grid(row = 6, columnspan = 2, padx = 3, pady = 3)
+
+        self.butt_edit = tk.Button(self.frm, text = 'Edit', command = lambda: self.edit_entry())
+        self.butt_edit.grid(row = 7, columnspan = 2, padx = 5, pady = 5, sticky = tk.EW)
         
         
     #-----------------------------------------    
@@ -258,8 +267,7 @@ class Main(object):
             notetoadd = """##########\nID: {}\nDate: {}\nNote: {}\nLast Change: {}\n##########\n\n""".format(j[0],j[1],j[2],j[3])
             self.txt.insert(tk.END,notetoadd)
         
-        return
-               
+        return   
     
     
     #-----------------------------------------------
@@ -274,8 +282,24 @@ class Main(object):
         ents = cur.fetchall()
         for j in ents:
             print(j)
-            
-            
+
+
+    #-----------------------------------------------
+    def edit_entry(self):
+        """
+        Takes user inputed entry of the ID number to coresponding date
+        and allows user to edit it.
+        """
+        entid = self.editent.get()
+        cur = self.condb.cursor()
+        cur.execute("""SELECT * FROM caldates WHERE id = ?""", (entid,))
+
+        self.editlevel = tk.Toplevel()
+        self.txtedit = tk.Text(self.editlevel)
+        self.txtedit.grid()
+        for j in cur.fetchone():
+            self.txtedit.insert(tk.END, '{}\n'.format(j))
+        self.editlevel.mainloop()
             
             
 if __name__ == '__main__':
