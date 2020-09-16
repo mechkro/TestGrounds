@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-#import tkcalendar as tcal
+import datetime as dt
+import tkcalendar as tcal
 
 
 """
@@ -12,16 +13,22 @@ Still feels like to much going on and too many clicks required between applicati
 Further optimizing the workflow is the goal with this code.
 """
 
+BG = 'dark gray'
+FG = 'grey2'
+DGR = 'white'
 
 class MainWin:
 
     def __init__(self, parent):
         self.parent = parent
+        self.parent.config(bg = BG)
         
-        self.top = tk.Frame(self.parent)
+        self.top = tk.Frame(self.parent, bg = BG)
         self.top.grid(row = 0)
-        self.bot = tk.Frame(self.parent)
+        self.bot = tk.Frame(self.parent, bg = BG)
         self.bot.grid(row = 1)
+        
+        
         self.menu_1 = tk.Menu(self.parent)
 
         menu_1_opts = {'Meeting': self.test_1,
@@ -41,12 +48,32 @@ class MainWin:
         for k,v in menu_2_opts.items():
             self.menu_2.add_command(label = k, command = v)
             
-        self.lbox1 = tk.Listbox(self.top, width = 20, height = 10)
-        self.lbox1.grid(row = 0, column = 0, padx = 10, pady = 10)
+        self.lbox1 = tk.Listbox(self.top, height = 10)
+        self.lbox1.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = tk.NSEW)
         
-        self.lbox2 = tk.Listbox(self.bot, width = 20, height = 10)
-        self.lbox2.grid(row = 0, column = 0, padx = 10, pady = 10)
         
+        today = dt.date.today()
+        mindate = dt.date(year=(int(2020)-1), month = int(today.month), day = int(today.day))
+        maxdate = today + dt.timedelta(days=365)
+        
+        self.cal = tcal.Calendar(self.top, font="Arial 14", selectmode='day', locale='en_US',
+                            background = BG, foreground = FG, headersbackground = BG, headersforeground = DGR,
+                            bordercolor = DGR,normalbackground = BG, normalforeground = FG,
+                            weekendbackground = BG, weekendforeground = FG,
+                            selectbackground = DGR, selectforeground = 'black',
+                            othermonthforeground = 'dim gray', othermonthbackground = BG,
+                            othermonthweforeground = 'dim gray', othermonthwebackground = BG,
+                            mindate=mindate, maxdate=maxdate, disabledforeground='red',
+                            tooltipbackground = BG, tooltipforeground = DGR,
+                            date_pattern = 'yyyy mm dd',
+                            cursor="hand1", year = int(today.year), month = int(today.month), day = int(today.day))
+
+        self.cal.grid(row = 1, column = 0, padx = 25, pady = 25, sticky = tk.NSEW)
+        
+        self.lbox2 = tk.Listbox(self.bot, height = 10)
+        self.lbox2.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = tk.NSEW)
+        
+        #MENU 1------------------------------------------------------------------
         #if (self.tk.call('tk', 'windowingsystem')=='aqua'):
         if self.lbox1.selection_get():
             self.lbox1.bind('<2>', lambda e: self.menu_1.post(e.x_root, e.y_root))
@@ -58,6 +85,21 @@ class MainWin:
         if self.lbox1.curselection() != None:
             self.lbox1.bind('<3>', lambda e: self.menu_1.post(e.x_root, e.y_root))
             self.lbox1.bind('<Double-Button-1>', self.double_click_open)
+        else:
+            pass
+        
+        #MENU 2------------------------------------------------------------------
+        #if (self.tk.call('tk', 'windowingsystem')=='aqua'):
+        if self.lbox2.selection_get():
+            self.lbox2.bind('<2>', lambda e: self.menu_2.post(e.x_root, e.y_root))
+            self.lbox2.bind('<Control-1>', lambda e: self.menu_2.post(e.x_root, e.y_root))
+        else:
+            pass
+            
+        #else:
+        if self.lbox2.curselection() != None:
+            self.lbox2.bind('<3>', lambda e: self.menu_2.post(e.x_root, e.y_root))
+            self.lbox2.bind('<Double-Button-1>', self.double_click_open)
         else:
             pass
 
@@ -135,8 +177,13 @@ class MainWin:
         return
 
 
-    def double_click_open(self):
-        pass
+    def double_click_open(self, event):
+        """ """
+        
+        x = event.x
+        y = event.y
+        print(f"Clicked @ Point {x},{y}")
+        return
 
 
 
