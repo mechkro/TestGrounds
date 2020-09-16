@@ -14,23 +14,22 @@ Further optimizing the workflow is the goal with this code.
 
 
 class MainWin:
-    
+
     def __init__(self, parent):
-
         self.parent = parent
-
+        
         self.top = tk.Frame(self.parent)
         self.top.grid(row = 0)
         self.bot = tk.Frame(self.parent)
         self.bot.grid(row = 1)
-
         self.menu_1 = tk.Menu(self.parent)
+
         menu_1_opts = {'Meeting': self.test_1,
                                     'CallLog Entry': self.test_2,
                                     'Bid Due': self.test_3,
                                     'FollowUp': self.test_4,
                                     'See All': self.test_5}
-        
+
         for k,v in menu_1_opts.items():
             self.menu_1.add_command(label = k, command = v)
 
@@ -39,84 +38,106 @@ class MainWin:
                                     'Delete': self.test_7,
                                     'Archive': self.test_8}
 
-         for k,v in menu_2_opts.items():
-             self.menu_2.add_command(label = k, command = v)
+        for k,v in menu_2_opts.items():
+            self.menu_2.add_command(label = k, command = v)
+            
+        self.lbox1 = tk.Listbox(self.top, width = 20, height = 10)
+        self.lbox1.grid(row = 0, column = 0, padx = 10, pady = 10)
+        
+        self.lbox2 = tk.Listbox(self.bot, width = 20, height = 10)
+        self.lbox2.grid(row = 0, column = 0, padx = 10, pady = 10)
+        
+        #if (self.tk.call('tk', 'windowingsystem')=='aqua'):
+        if self.lbox1.selection_get():
+            self.lbox1.bind('<2>', lambda e: self.menu_1.post(e.x_root, e.y_root))
+            self.lbox1.bind('<Control-1>', lambda e: self.menu_1.post(e.x_root, e.y_root))
+        else:
+            pass
+            
+        #else:
+        if self.lbox1.curselection() != None:
+            self.lbox1.bind('<3>', lambda e: self.menu_1.post(e.x_root, e.y_root))
+            self.lbox1.bind('<Double-Button-1>', self.double_click_open)
+        else:
+            pass
 
 
     ############################################################################
     #MENU SELECTED DRIVEN OPTIONS--------------------------------------------
-    #----------------------------------------------------------   
+    #----------------------------------------------------------
     def test_1(self):
-        """ 
-        Pop up menu selection triggered -'MEETING 
+        """
+        Pop up menu selection triggered -'MEETING
         """
         print('Test MEETING worked')
         return
-    
-    #----------------------------------------------------------   
+
+    #----------------------------------------------------------
     def test_2(self):
         """
-         Pop up menu selection triggered -'CALL LOG ENTRY 
+         Pop up menu selection triggered -'CALL LOG ENTRY
         """
-        
+
         print('Test CALL LOG ENTRY worked')
         return
-    
-    #----------------------------------------------------------   
+
+    #----------------------------------------------------------
     def test_3(self):
         """
          Pop up menu selection triggered -'BID DUE
         """
-        
+
         print('Test BID DUE worked')
         return
-    
-    #----------------------------------------------------------   
+
+    #----------------------------------------------------------
     def test_4(self):
         """
          Pop up menu selection triggered - FOLLOW UP
         """
-        
+
         print('Test FOLLOW UP worked')
         return
 
-    #----------------------------------------------------------   
+    #----------------------------------------------------------
     def test_5(self):
-        """ 
-        Pop up menu selection triggered -'COPY' 
+        """
+        Pop up menu selection triggered -'COPY'
         """
         print('Test SEE ALL worked')
         return
-    
-    #----------------------------------------------------------   
+
+    #----------------------------------------------------------
     def test_6(self):
         """
-         Pop up menu selection triggered -'EDIT' 
+         Pop up menu selection triggered -'EDIT'
         """
-        
+
         print('Test EDIT worked')
         return
-    
-    #----------------------------------------------------------   
+
+    #----------------------------------------------------------
     def test_7(self):
         """
-         Pop up menu selection triggered -'DELETE' 
+         Pop up menu selection triggered -'DELETE'
         """
-        
+
         print('Test DELETE worked')
         return
-    
-    #----------------------------------------------------------   
+
+    #----------------------------------------------------------
     def test_8(self):
         """
-         Pop up menu selection triggered -'ARCHIVE' 
+         Pop up menu selection triggered -'ARCHIVE'
         """
-        
+
         print('Test ARCHIVE worked')
         return
-        
-        
-        
+
+
+    def double_click_open(self):
+        pass
+
 
 
 
@@ -129,4 +150,3 @@ if __name__ == '__main__':
     root = tk.Tk()
     MainWin(root)
     root.mainloop()
-    
