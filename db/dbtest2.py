@@ -5,6 +5,7 @@ import calendar as cal
 import collections as clc
 import json
 import datetime as dt
+import collections as clc
 
 opts = """Ign:1 https://storage.googleapis.com/cros-packages/85 buster InRelease
 Get:2 https://storage.googleapis.com/cros-packages/85 buster Release [3,119 B]
@@ -35,7 +36,7 @@ class main:
         self.parent = parent
         self.parent.title('Main DB')
         
-        self.entriestracker = {}
+        self.entriestracker = clc.OrderedDict()
         self.create_widgets()
         self.load_db()
         self.pull_db_info()
@@ -154,7 +155,7 @@ class main:
             if yr == '2020':
                 randval = rand.choice(opts)
                 self.lbox.insert(tk.END, f"{v} : Entries = None ")
-                self.entriestracker[v] = 0
+                self.entriestracker[str(v)] = 0
             else:
                 pass
     
@@ -220,12 +221,22 @@ class main:
         self.txtbox.grid(row = 1, column = 0, columnspan = 2)
         self.repbutt = tk.Button(self.dbtop, text = 'Replace Entry', command = lambda: self.newentryparser(curselect[0]))
         self.repbutt.grid(row = 2, column = 0, sticky = tk.EW)
-        self.addbutt = tk.Button(self.dbtop, text = 'Add Entry', command = lambda: None)
+        self.addbutt = tk.Button(self.dbtop, text = 'Add Entry', command = lambda: self.addentry(curselect[0]))
         self.addbutt.grid(row = 2, column = 1, sticky = tk.EW)
-        self.sepbutt = tk.Button(self.dbtop, text = 'Add Entry', command = lambda: self.addseperator())
-        self.sepbutt.grid(row = 3, column = 0, columnspan = 2)
+        self.sepbutt = tk.Button(self.dbtop, text = 'Add Seperator', command = lambda: self.addseperator())
+        self.sepbutt.grid(row = 3, column = 0, columnspan = 2, sticky = tk.EW)
         self.dbtop.mainloop()
 
+    #--------------------------------------
+    def addentry(self, d):
+        """
+        """
+        pulledtext = self.txtbox.get(1.0, tk.END)
+        self.dbtop.destroy()
+        self.entriestracker[str(d)] = pulledtext
+        self.refreshmainlist()
+
+        
     #--------------------------------------
     def addseperator(self):
         """
@@ -251,7 +262,7 @@ class main:
         for n,i in enumerate(enttxt):
             jsdict[n] = i.strip('\n')
         
-        self.entriestracker[d] = len(jsdict.values())       #Keeping track of entry totals for each date to display on the main listbox
+        self.entriestracker[str(d)] = len(jsdict.values())       #Keeping track of entry totals for each date to display on the main listbox
         for k,v in self.entriestracker.items():
             print(k,v)
             
@@ -261,6 +272,15 @@ class main:
         pull = json.loads(go)
         print(go)
         print(pull)
+
+    #--------------------------------------
+    def refreshmainlist(self):
+        """
+        """
+        self.lbox.delete(0,tk.END)
+        for k,v in sorted(self.entriestracker.items()):
+            self.lbox.insert(tk.END, f"{k} : {v}")
+        return
         
         
 
