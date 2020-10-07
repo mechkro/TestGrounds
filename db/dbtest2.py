@@ -7,22 +7,7 @@ import json
 import datetime as dt
 import collections as clc
 
-opts = """Ign:1 https://storage.googleapis.com/cros-packages/85 buster InRelease
-Get:2 https://storage.googleapis.com/cros-packages/85 buster Release [3,119 B]
-Get:3 https://storage.googleapis.com/cros-packages/85 buster Release.gpg [819 B]
-Get:4 https://deb.debian.org/debian buster InRelease [121 kB]
-Get:5 https://deb.debian.org/debian-security buster/updates InRelease [65.4 kB]
-Get:6 https://storage.googleapis.com/cros-packages/85 buster/main amd64 Packages [16.1 kB]
-Get:7 https://deb.debian.org/debian buster/main amd64 Packages [7,906 kB]
-Get:8 https://deb.debian.org/debian buster/main Translation-en [5,968 kB]
-Get:9 https://deb.debian.org/debian-security buster/updates/main amd64 Packages [234 kB]
-Get:10 https://deb.debian.org/debian-security buster/updates/main Translation-en [126 kB]
-Fetched 14.4 MB in 8s (1,775 kB/s)                                                                                                                                         
-Reading package lists... Done
-Building dependency tree       
-Reading state information... Done
-36 packages can be upgraded. Run 'apt list --upgradable' to see them.
-N: Repository 'https://deb.debian.org/debian buster InRelease' changed its 'Version' value from '10.4' to '10.6'""".splitlines()
+
 
 #---------------------------------------
 class main:
@@ -41,8 +26,8 @@ class main:
         self.load_db()
         self.pull_db_info()
         self.populate_list()
-        
-        
+
+  
     #WIDGET SECTION -------------------------------------------
     def create_widgets(self):
         """ 
@@ -59,12 +44,13 @@ class main:
         self.create_lbox(40, 15)
         
         self.filtentry = tk.Entry(self.parent)
-        self.filtentry.grid()
+        self.filtentry.grid(sticky = tk.EW)
         self.fbutt = tk.Button(self.parent, text = 'Filter', command = lambda: None)
-        self.fbutt.grid()
+        self.fbutt.grid(sticky = tk.EW)
         self.defbutt = tk.Button(self.parent, text = 'Reset', command = lambda: None)
-        self.defbutt.grid()
-        
+        self.defbutt.grid(sticky = tk.EW)
+
+
     #--------------------------------------
     def create_label(self, txt):
         """ 
@@ -74,6 +60,7 @@ class main:
         self.lab = tk.Label(self.parent, text = txt)
         self.lab.grid()
         return
+    
     
     #--------------------------------------
     def create_lbox(self, w, h):
@@ -99,6 +86,7 @@ class main:
         
         self.con = sql3.connect(':memory:')
         return
+    
     
     #--------------------------------------
     def fetch_db_ents(self, ents):
@@ -137,19 +125,23 @@ class main:
         
         pass
     
+    
     #--------------------------------------
     def pull_db_info(self):
         """ 
         call to calendar function for given year to return datetime objects
         """
+        
         self.dataents = self.pullcalldates()
         return
-        
+    
+    
     #--------------------------------------
     def populate_list(self):
         """ 
         
         """
+        
         for k,v in self.dataents.items():
             yr  = str(v).split('-')[0]
             if yr == '2020':
@@ -158,6 +150,7 @@ class main:
                 self.entriestracker[str(v)] = 0
             else:
                 pass
+    
     
     #--------------------------------------
     def pullcalldates(self):
@@ -176,6 +169,7 @@ class main:
                         itr += 1
                         self.d[itr] = u
         return self.d
+    
     
     #--------------------------------------
     def serializedata(self, entdate, dictobj):
@@ -201,7 +195,8 @@ class main:
     #EVENT BINDING FUNCTIONS ----------------------------------------------------
     #--------------------------------------
     def alterlabel(self,event):
-        """ 
+        """
+        
         """
         
         curselect = event.widget.get(tk.ACTIVE).split(':')
@@ -211,6 +206,7 @@ class main:
     #--------------------------------------
     def newtoplevel(self, event):
         """
+        
         """
         
         self.dbtop = tk.Toplevel()
@@ -227,13 +223,19 @@ class main:
         self.sepbutt.grid(row = 3, column = 0, columnspan = 2, sticky = tk.EW)
         self.dbtop.mainloop()
 
+
     #--------------------------------------
     def addentry(self, d):
         """
+        
         """
-        pulledtext = self.txtbox.get(1.0, tk.END)
+        
+        jsdict = {}
+        pulledtext = self.txtbox.get(1.0, tk.END).split('-----')
+        for n,i in enumerate(pulledtext):
+            jsdict[n] = i.strip('\n')
+        self.entriestracker[str(d)] = len(jsdict.values())
         self.dbtop.destroy()
-        self.entriestracker[str(d)] = pulledtext
         self.refreshmainlist()
 
         
@@ -273,13 +275,16 @@ class main:
         print(go)
         print(pull)
 
+
     #--------------------------------------
     def refreshmainlist(self):
         """
+        
         """
+        
         self.lbox.delete(0,tk.END)
         for k,v in sorted(self.entriestracker.items()):
-            self.lbox.insert(tk.END, f"{k} : {v}")
+            self.lbox.insert(tk.END, f"{k} : {v} Entries")
         return
         
         
