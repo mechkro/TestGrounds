@@ -59,11 +59,11 @@ class main:
         self.create_lbox(40, 15)
         
         self.filtentry = tk.Entry(self.parent)
-        self.filtentry.grid()
+        self.filtentry.grid(sticky = tk.EW)
         self.fbutt = tk.Button(self.parent, text = 'Filter', command = lambda: None)
-        self.fbutt.grid()
+        self.fbutt.grid(sticky = tk.EW)
         self.defbutt = tk.Button(self.parent, text = 'Reset', command = lambda: None)
-        self.defbutt.grid()
+        self.defbutt.grid(sticky = tk.EW)
         
     #--------------------------------------
     def create_label(self, txt):
@@ -83,10 +83,24 @@ class main:
         
         self.lbox = tk.Listbox(self.parent, width = w, height = h)
         self.lbox.grid()
-        self.lbox.bind('<Button-1>', self.alterlabel)
+        self.lbox.bind('<Button-1>', self.tooltipobj)#self.alterlabel)
         self.lbox.bind('<Double-Button-1>', self.newtoplevel)
+        #lbox_ttp = CreateToolTip(self.lbox, "Testing")
+        #self.lbox.bind("<Enter>", self.ttip_enter)
+        #self.lbox.bind("<Leave>", self.ttip_close)
     
     
+    def tooltipobj(self, event):
+        txt = 'test'
+        ktrack = tk.StringVar()
+        k = CreateToolTip(self.lbox, txt)
+        ktrack.trace('w', self.delkobj)
+        
+        
+    def delkobj(self, *args):
+        del(k)
+        return
+        
     #DATABASE SECTION -----------------------------------------
     def load_db(self):
         """
@@ -245,7 +259,7 @@ class main:
         """
         
         tod = dt.datetime.today()           #Add a timestamp to the entry
-        seper = f"{tod}:\n-----\n"
+        seper = f"\n{tod}:\n-----"
         self.txtbox.insert(tk.END, seper)
         return
 
@@ -279,12 +293,97 @@ class main:
         """
         self.lbox.delete(0,tk.END)
         for k,v in sorted(self.entriestracker.items()):
-            self.lbox.insert(tk.END, f"{k} : {v}")
+            if v != 0:
+                self.lbox.insert(tk.END, f"{k} : {v}")
+                self.lbox.itemconfig(tk.END, fg = 'red')
+            else:
+                self.lbox.insert(tk.END, f"{k} : {v}")
         return
+    
+    #TOOL TIP FUNCTIONALITY
+    #------------------------------------------------------
+    def ttip_enter(self, event=None):
+        x = y = 0
+        x, y, cx, cy = event.widget.bbox("insert")
+        x += event.widget.winfo_rootx() + 25
+        y += event.widget.winfo_rooty() + 20
         
+        # creates a toplevel window
+        self.tw = tk.Toplevel(event.widget)
         
+        # Leaves only the label and removes the app window
+        self.tw.wm_overrideredirect(True)
+        self.tw.wm_geometry("+%d+%d" % (x, y))
+        label = tk.Label(self.tw, text=self.text, justify='left', foreground = 'white',
+                       background='navy blue', relief='solid', borderwidth=1,
+                       font=("times", "12", "normal"))
+        label.pack(ipadx=1)
+        
+    #------------------------------------------------------
+    def ttip_close(self, event=None):
+        if self.tw:
+            self.tw.destroy()
 
 
+
+
+
+
+
+class CreateToolTip(object):
+    '''
+    create a tooltip for a given widget
+    '''
+    def __init__(self, widget, text='widget info'):
+        self.widget = widget
+        self.near = self.widget.nearest(self.widget.winfo_pointery())
+        self.text = self.widget.get(tk.ACTIVE)   #f'@{self.widget.winfo_pointerx()},{self.widget.winfo_pointery()}')#,(self.widget.winfo_pointerx(), self.widget.winfo_pointery()))
+        self.widget.bind("<Enter>", self.enter)
+        self.widget.bind("<Leave>", self.close)
+        
+    #------------------------------------------------------
+    def enter(self, event=None):
+        """
+        x = root.winfo_pointerx()
+        y = root.winfo_pointery()
+        abs_coord_x = root.winfo_pointerx() - root.winfo_rootx()
+        abs_coord_y = root.winfo_pointery() - root.winfo_rooty()
+        """
+        x = y = 0
+        x, y, cx, cy = self.widget.bbox(tk.ACTIVE)
+        x += (self.widget.winfo_pointerx())  # - self.widget.winfo_rootx()) #+ 25
+        y += (self.widget.winfo_pointery())  # - self.widget.winfo_rooty()) #+ 20
+        
+        # creates a toplevel window
+        self.tw = tk.Toplevel(self.widget)
+        
+        # Leaves only the label and removes the app window
+        self.tw.wm_overrideredirect(True)
+        self.tw.wm_geometry("+%d+%d" % (x, y))
+        self.label = tk.Label(self.tw, text=self.widget.get(tk.ACTIVE), justify='left', foreground = 'black',
+                       relief='solid', borderwidth=1,
+                       font=("times", "12", "normal"))
+        self.label.pack(ipadx=1)
+        #In the 1st class you can add in line 38:
+        self.label.after(1000, self.altercolor)
+        #self.label.after(2000, self.close)
+        #to disappear the label after 1 sec
+    
+    #------------------------------------------------------
+    def close(self, event=None):
+        try:
+            if self.tw:
+                self.tw.destroy()
+        except AttributeError as e:
+            print(e)
+    
+    def changedialog(self, txt):
+        self.label.config(text = txt)
+    
+    def altercolor(self, event = None):
+        self.label.config(background = 'red')
+        self.label.after(2000, self.close)
+        #self.label.after(2000, self.changedialog('Hurry Up'))
 
 #MAIN----------------------------
 #--------------------------------
