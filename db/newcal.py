@@ -274,7 +274,10 @@ class initiate_dates:
             else:
                 print(k,v)
                 rtxt = rand.choice(emailpool)
-                self.peeklab.config(text = f"Entries include: {rtxt}")
+                #self.peeklab.config(text = f"Entries include: {rtxt}")
+                self.tbox1.delete(1.0, tk.END)
+                self.tbox1.insert(tk.END, rtxt)
+                
     
     
     #---------------------------------------------------
@@ -314,13 +317,24 @@ class initiate_dates:
         self.nbook.add(self.t4, text ='ACCOUNTS')
         self.nbook.add(self.t5, text ='VENDORS')
         self.nbook.add(self.t6, text ='FOLLOW UPS')
-        self.nbook.grid(row = 4, column = 0, columnspan = 2, padx = 10, pady = 10)
+        self.nbook.grid(row = 4, column = 0, columnspan = 2, padx = 10, pady = 10, sticky = tk.NSEW)
         
         self.add_widgets_notebook()             #Make call to add widgets to each of the frames for the notebook
+        self.tboxcontain = [(self.t1,self.tbox1),
+                            (self.t2,self.tbox2),
+                            (self.t3,self.tbox3),
+                            (self.t4,self.tbox4),
+                            (self.t5,self.tbox5),
+                            (self.t6,self.tbox6)]
+        for i in self.tboxcontain:
+            self.add_scrollbars(i[0],i[1])
     
     #--------------------------------------------------
     def add_widgets_notebook(self):
-        """ """
+        """ 
+        create the text widgets inside of each frame in the notebook.
+        """
+        
         self.tbox1 = tk.Text(self.t1)
         self.tbox2 = tk.Text(self.t2)
         self.tbox3 = tk.Text(self.t3)
@@ -328,12 +342,31 @@ class initiate_dates:
         self.tbox5 = tk.Text(self.t5)
         self.tbox6 = tk.Text(self.t6)
         
-        self.tbox1.grid(padx = 5, pady = 5)
-        self.tbox2.grid(padx = 5, pady = 5)
-        self.tbox3.grid(padx = 5, pady = 5)
-        self.tbox4.grid(padx = 5, pady = 5)
-        self.tbox5.grid(padx = 5, pady = 5)
-        self.tbox6.grid(padx = 5, pady = 5)
+        self.tbox1.grid(padx = 5, pady = 5, row = 0, column = 0)
+        self.tbox2.grid(padx = 5, pady = 5, row = 0, column = 0)
+        self.tbox3.grid(padx = 5, pady = 5, row = 0, column = 0)
+        self.tbox4.grid(padx = 5, pady = 5, row = 0, column = 0)
+        self.tbox5.grid(padx = 5, pady = 5, row = 0, column = 0)
+        self.tbox6.grid(padx = 5, pady = 5, row = 0, column = 0)
+        
+        return
+
+
+    #--------------------------------------------------
+    def add_scrollbars(self, frm, tbox):
+        """ 
+        create the scrollbars for each of the text box in notebook
+        self.scroll1 = tk.Scrollbar(self.t1, orient = tk.VERTICAL)
+        self.scroll1.grid(row = 0, column = 1, sticky = tk.NS)
+        self.tbox1.config(yscrollcommand = self.scroll1.set)
+        self.scroll1.config(command = self.tbox1.yview)
+        """
+        scroll = tk.Scrollbar(frm, orient = tk.VERTICAL)
+        scroll.grid(row = 0, column = 1, sticky = tk.NS)
+        tbox.config(yscrollcommand = scroll.set)
+        scroll.config(command = tbox.yview)
+        
+        return
         
     
 
