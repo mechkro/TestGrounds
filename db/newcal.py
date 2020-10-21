@@ -6,7 +6,7 @@ import random as rand
 import tkinter as tk
 from tkinter import ttk
 import tkcalendar as tcal
-from TextFarm_emails import msgfunc
+#from TextFarm_emails import msgfunc
 
 
 #----------------------------------------------------------------
@@ -167,14 +167,15 @@ class initiate_dates:
         self.temptesting()
         self.addcalendar()
         self.sboxmaker()
+        self.nbookmaker()
 
 
     #----------------------------------------------------
     def dbinit(self):
         """ """
         self.con = sql3.connect(":memory:")
-        x = msgfunc()
-        for i in x:
+        #x = msgfunc()
+        for i in emailpool:
             print(i)
             
 
@@ -230,8 +231,8 @@ class initiate_dates:
             else:
                 pass
         
-        x = msgfunc()
-        for i in x:
+        #x = msgfunc()
+        for i in emailpool:
             self.lbox.insert(tk.END, i)
         print(containcount.values())
 
@@ -280,7 +281,7 @@ class initiate_dates:
     def sboxmaker(self):
         """ """
         self.cbox = ttk.Combobox(self.master, values = [dt.datetime.strftime(i, "%Y-%m-%d") for i in contain.values()])
-        self.cbox.grid()
+        self.cbox.grid(row = 2, column = 0, columnspan = 2, pady = 10, sticky = tk.EW)
         self.cbox.bind("<<ComboboxSelected>>", self.cboxevent)
 
 
@@ -292,7 +293,48 @@ class initiate_dates:
         csplit = cur.split('-')
         print(csplit)
         self.c.see(dt.datetime.strptime(cur, "%Y-%m-%d"))
-        dt.datetime.date
+        #dt.datetime.date
+
+
+    #---------------------------------------------------
+    def nbookmaker(self):
+        """ 
+        Notebook widget maker. Make tabs for each of the areas I track for sales i.e. - call logs, accounts, projects, reminders, ...etc
+        """
+        self.nbook = ttk.Notebook(self.master)
+        self.t1 = ttk.Frame(self.nbook)
+        self.t2 = ttk.Frame(self.nbook)
+        self.t3 = ttk.Frame(self.nbook)
+        self.t4 = ttk.Frame(self.nbook)
+        self.t5 = ttk.Frame(self.nbook)
+        self.t6 = ttk.Frame(self.nbook)
+        self.nbook.add(self.t1, text ='CALL LOG')
+        self.nbook.add(self.t2, text ='PROJECTS')
+        self.nbook.add(self.t3, text ='TO DO')
+        self.nbook.add(self.t4, text ='ACCOUNTS')
+        self.nbook.add(self.t5, text ='VENDORS')
+        self.nbook.add(self.t6, text ='FOLLOW UPS')
+        self.nbook.grid(row = 4, column = 0, columnspan = 2, padx = 10, pady = 10)
+        
+        self.add_widgets_notebook()             #Make call to add widgets to each of the frames for the notebook
+    
+    #--------------------------------------------------
+    def add_widgets_notebook(self):
+        """ """
+        self.tbox1 = tk.Text(self.t1)
+        self.tbox2 = tk.Text(self.t2)
+        self.tbox3 = tk.Text(self.t3)
+        self.tbox4 = tk.Text(self.t4)
+        self.tbox5 = tk.Text(self.t5)
+        self.tbox6 = tk.Text(self.t6)
+        
+        self.tbox1.grid(padx = 5, pady = 5)
+        self.tbox2.grid(padx = 5, pady = 5)
+        self.tbox3.grid(padx = 5, pady = 5)
+        self.tbox4.grid(padx = 5, pady = 5)
+        self.tbox5.grid(padx = 5, pady = 5)
+        self.tbox6.grid(padx = 5, pady = 5)
+        
     
 
 #------------------------------------
