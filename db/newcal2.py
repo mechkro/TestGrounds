@@ -168,8 +168,45 @@ class initiate_dates:
         self.addcalendar()
         self.sboxmaker()
         self.nbookmaker()
+        self.createpopmenu()
 
 
+    #----------------------------------------------------
+    def createpopmenu(self):
+        """ 
+        create a menu instance to allow user to popup menuoptions when configured event button press 
+        is initiated.
+        """
+        
+        self.menu = tk.Menu(self.master)
+        for i in ('Copy', 'Edit', 'Remove', 'Tag', 'Select', 'Cancel'):
+            self.menu.add_command(label=i, command = lambda: self.menucommand(i))
+        self.master.bind('<2>', lambda e: self.menu.post(e.x_root, e.y_root))
+        self.master.bind('<3>', self.clickedwidgetreturn)
+    
+    #----------------------------------------------------
+    def menucommand(self, action):
+        """ 
+        Func is passed one of the following strings 'Copy', 'Edit', 'Remove', 'Tag', 'Select', 'Cancel'.
+        Will dictate the next action
+        
+        **** CURRENTLY ONLY PRINTING 'cancel' ***
+        """
+        print(action)    
+    
+    
+    #----------------------------------------------------
+    def clickedwidgetreturn(self, event):
+        """ 
+        screen.update_idletasks()
+        x,y = screen.winfo_rootx(), screen.winfo_rooty()
+        print(screen.winfo_containing(x+5, y+5))
+        """
+        #event.update_idletask()
+        x,y = event.x_root, event.y_root
+        widge = self.master.winfo_containing(x, y)
+        print(widge)
+        
     #----------------------------------------------------
     def dbinit(self):
         """ """
@@ -282,23 +319,31 @@ class initiate_dates:
     
     #---------------------------------------------------
     def sboxmaker(self):
-        """ """
+        """ 
+        
+        """
+        
         self.cbox = ttk.Combobox(self.master, values = [dt.datetime.strftime(i, "%Y-%m-%d") for i in contain.values()])
         self.cbox.grid(row = 2, column = 0, columnspan = 2, pady = 10, sticky = tk.EW)
         self.cbox.bind("<<ComboboxSelected>>", self.cboxevent)
+        
+        for i in range(55):
+            pass
 
 
     #---------------------------------------------------
     def cboxevent(self, event):
         """ 
-        
+        triggered due to combobox selection change. 
+        Intended use:
+            - Flip calendar to show the selected date so it is visible in the appropriate month of the selection
+            - 
         """
         
         cur = self.cbox.get()
-        print(type(cur))
         csplit = cur.split('-')
-        print(csplit)
         self.c.see(dt.datetime.strptime(cur, "%Y-%m-%d"))
+        self.c.selection_set(dt.datetime.strptime(cur, "%Y-%m-%d"))
         #dt.datetime.date
 
 
@@ -322,6 +367,9 @@ class initiate_dates:
         self.nbook.add(self.t6, text ='FOLLOW UPS')
         self.nbook.grid(row = 4, column = 0, columnspan = 2, padx = 10, pady = 10, sticky = tk.NSEW)
         
+        self.addbutt = tk.Button(self.master, text = 'ADD', command = lambda: None)
+        self.addbutt.grid(row = 5, sticky = tk.EW)
+        
         self.add_widgets_notebook()             #Make call to add widgets to each of the frames for the notebook
         self.tboxcontain = [(self.t1,self.tbox1),
                             (self.t2,self.tbox2),
@@ -332,6 +380,10 @@ class initiate_dates:
         for i in self.tboxcontain:
             self.add_scrollbars(i[0],i[1])
         
+        #BUTTON WIDGET-------------------
+        self.addbutt = tk.Button(self.master, text = 'ADD', command = lambda: None)
+        self.addbutt.grid(row = 5, sticky = tk.EW)
+        
         self.t3frame_func()
     
     #--------------------------------------------------
@@ -340,12 +392,12 @@ class initiate_dates:
         create the text widgets inside of each frame in the notebook.
         """
         
-        self.tbox1 = tk.Text(self.t1)
-        self.tbox2 = tk.Text(self.t2)
+        self.tbox1 = tk.Text(self.t1, height = 6)
+        self.tbox2 = tk.Text(self.t2, height = 6)
         #self.tbox3 = tk.Text(self.t3)
-        self.tbox4 = tk.Text(self.t4)
-        self.tbox5 = tk.Text(self.t5)
-        self.tbox6 = tk.Text(self.t6)
+        self.tbox4 = tk.Text(self.t4, height = 6)
+        self.tbox5 = tk.Text(self.t5, height = 6)
+        self.tbox6 = tk.Text(self.t6, height = 6)
         
         self.tbox1.grid(padx = 5, pady = 5, row = 0, column = 0)
         self.tbox2.grid(padx = 5, pady = 5, row = 0, column = 0)
@@ -389,11 +441,11 @@ class initiate_dates:
         self.fright.grid(row = 0, column = 2)
         
         #LISTBOXES ----------------------------
-        self.lbox_left = tk.Listbox(self.fleft)
+        self.lbox_left = tk.Listbox(self.fleft, height = 5)
         self.lbox_left.grid(row = 1, column = 0, padx = 5, pady = 5)
-        self.lbox_mid = tk.Listbox(self.fmid)
+        self.lbox_mid = tk.Listbox(self.fmid, height = 5)
         self.lbox_mid.grid(row = 1, column = 1, padx = 5, pady = 5)
-        self.lbox_right = tk.Listbox(self.fright)
+        self.lbox_right = tk.Listbox(self.fright, height  = 5)
         self.lbox_right.grid(row = 1, column = 2, padx = 5, pady = 5)
         
         #FUNCTIONALITY BUTTONS
