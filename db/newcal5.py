@@ -6,6 +6,10 @@ import random as rand
 import tkinter as tk
 from tkinter import ttk
 import tkcalendar as tcal
+import random as rand
+
+
+
 
 
 #----------------------------------------------------------------
@@ -66,6 +70,7 @@ class initiate_dates:
         self.con = sql3.connect(":memory:")
 
 
+    #----------------------------------------------------
     def dbtable_create(self):
         """
         """
@@ -148,7 +153,7 @@ class initiate_dates:
         self.c = tcal.Calendar(self.master, font="Arial 14", selectmode='day', locale='en_US',
                    mindate=mindate, maxdate=maxdate, disabledforeground='red', selectforeground = 'grey2', selectbackground = 'dark green',
                    cursor="hand1")#, year=2018, month=2, day=5)
-        self.c.grid(row = 0, rowspan = 2, column = 1)
+        self.c.grid(row = 0, rowspan = 2, column = 1, padx = 15, pady = 15)
         
         self.c.tag_config('trigger', foreground = 'dark goldenrod', background = 'black')           #Config the tag 'trigger' for the triggered dates to be added to        
         for k,v in self.trigcontain.items():                                                        #Add tags to each of the triggered dates so they are color themed on tkcalendar
@@ -158,31 +163,68 @@ class initiate_dates:
         self.c.selection_set(self.rday)
 
 
+
     #---------------------------------------------------
     def addtreeview(self):
         """ 
         
         """
         
-        self.tview = ttk.Treeview(self.frame1, columns = ('Item', 'Name', 'ID'))
+        self.tview = ttk.Treeview(self.frame1, columns = ('1','2','3'))
         #self.tree = ttk.Treeview(self.root, columns=('Name', 'ID'))
         
         # Set the heading (Attribute Names)
-        self.tview.heading('#0', text='Item')
-        self.tview.heading('#1', text='Name')
-        self.tview.heading('#2', text='ID')
+        self.tview.heading('1', text='Accnt')
+        self.tview.heading('2', text='Todo')
+        self.tview.heading('3', text='Last Date')
     
         # Specify attributes of the columns (We want to stretch it!)
-        self.tview.column('#0', stretch=tk.YES)
-        self.tview.column('#1', stretch=tk.YES)
-        self.tview.column('#2', stretch=tk.YES)
+        self.tview.column('1', width = 190, anchor ='c', stretch=tk.YES)
+        self.tview.column('2', width = 190, anchor ='se', stretch=tk.YES)
+        self.tview.column('3', width = 190, anchor ='se', stretch=tk.YES)
     
-        self.tview.grid(row=4, columnspan=4, sticky='nsew')
         #self.treeview = self.tree        
+        self.tview.grid(row = 0, column = 0, padx = 5, pady = 5, sticky = tk.NSEW)
         
-        self.tview.grid(padx = 5, pady = 5)
-
-
+        self.verscrlbar = ttk.Scrollbar(self.frame1,  
+                                   orient ="vertical",  
+                                   command = self.tview.yview) 
+          
+        # Calling pack method w.r.to verical  
+        # scrollbar 
+        self.verscrlbar.grid(row = 0, column = 1, sticky = tk.NS) 
+          
+        # Configuring treeview 
+        self.tview.configure(xscrollcommand = self.verscrlbar.set)         
+        
+        acnt_choice = ['FMI Bagdad', 'Abbott Nut.', 'Envirogen', 'City oh Henderson']
+        todo_choice = ['Not started', 'In progress', 'Completed']
+        
+        
+        for i in range(1000):
+            arand = rand.choice(acnt_choice)
+            torand = rand.choice(todo_choice)
+            randday = rand.choice(range(1,len(contain.items())))
+            self.enter_data_tview(i, *[arand,torand,contain[randday]])
+    
+    
+    #---------------------------------------------------
+    def enter_data_tview(self, entry_id, *args):
+        """ 
+        entry_id = the auto increment db id from sql
+        *args:
+            - Accnt
+            - Todo
+            - Last Date        
+        """
+        
+        
+        self.tview.insert("", "end", text = entry_id, values = (args[:]))
+        
+        return
+    
+    
+    
 
     #---------------------------------------------------
     def addtrellonbook(self):
@@ -199,7 +241,7 @@ class initiate_dates:
         self.nbook.add(self.frame2, text = 'In Progress')
         self.nbook.add(self.frame3, text = 'Completed')
         
-        self.nbook.grid(row = 2, column = 0, columnspan = 2, padx = 5, pady = 5, sticky = tk.EW)
+        self.nbook.grid(row = 2, column = 0, columnspan = 3, padx = 5, pady = 5, sticky = tk.NSEW)
         self.nbook.bind("<<NotebookTabChanged>>", self.changebutton)
         
         self.navbutton = tk.Button(self.master, text = ">", command = lambda: None)
